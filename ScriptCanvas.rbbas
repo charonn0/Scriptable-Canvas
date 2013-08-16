@@ -21,11 +21,8 @@ Inherits Canvas
 		Sub Paint(g As Graphics)
 		  If Buffer = Nil Then Buffer = New Picture(g.Width, g.Height, 24)
 		  
-		  If Overlay <> Nil Then 
-		    Static tmp As Picture
-		    If tmp = Nil Or tmp.Width <> Buffer.Width Or tmp.Height <> Buffer.Height Then
-		      tmp = New Picture(Buffer.Width, Buffer.Height, Buffer.Depth)
-		    End If
+		  If Overlay <> Nil Then
+		    Dim tmp As New Picture(Buffer.Width, Buffer.Height, Buffer.Depth)
 		    tmp.Graphics.DrawPicture(Buffer, 0, 0)
 		    Overlay.Transparent = 1
 		    tmp.Graphics.DrawPicture(Overlay, 0, 0)
