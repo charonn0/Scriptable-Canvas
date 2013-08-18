@@ -71,7 +71,7 @@ Begin Window MainWindow
       Panels          =   ""
       Scope           =   0
       SmallTabs       =   ""
-      TabDefinition   =   "OnPaint\rOnClick\rOnMouseMove\rSettings"
+      TabDefinition   =   "OnPaint\rOnClick\rOnMouseMove\rErrors"
       TabIndex        =   7
       TabPanelIndex   =   0
       TabStop         =   True
@@ -80,7 +80,7 @@ Begin Window MainWindow
       TextUnit        =   0
       Top             =   7
       Underline       =   ""
-      Value           =   0
+      Value           =   1
       Visible         =   True
       Width           =   548
       Begin CustomEditField OnClick
@@ -91,9 +91,10 @@ Begin Window MainWindow
          AutoDeactivate  =   True
          AutoIndentNewLines=   true
          BackColor       =   16777215
+         Backdrop        =   ""
          Border          =   True
          BorderColor     =   &h888888
-         BracketHighlightColor=   "&cFFFF00"
+         BracketHighlightColor=   &h00FF0000
          CaretColor      =   "&c000000"
          ClearHighlightedRangesOnTextChange=   true
          DirtyLinesColor =   "&cFF9999"
@@ -108,11 +109,11 @@ Begin Window MainWindow
          EraseBackground =   ""
          GutterBackgroundColor=   "&cEEEEEE"
          GutterSeparationLineColor=   "&c888888"
-         Height          =   258
+         Height          =   242
          HelpTag         =   ""
          HighlightBlocksOnMouseOverGutter=   true
          HighlightMatchingBrackets=   true
-         HighlightMatchingBracketsMode=   0
+         HighlightMatchingBracketsMode=   1
          ignoreRepaint   =   0
          Index           =   -2147483648
          InitialParent   =   "TabPanel1"
@@ -142,7 +143,7 @@ Begin Window MainWindow
          Top             =   40
          UseFocusRing    =   True
          Visible         =   True
-         Width           =   533
+         Width           =   513
       End
       Begin CustomEditField OnMouseMove
          AcceptFocus     =   ""
@@ -152,9 +153,10 @@ Begin Window MainWindow
          AutoDeactivate  =   True
          AutoIndentNewLines=   true
          BackColor       =   16777215
+         Backdrop        =   ""
          Border          =   True
          BorderColor     =   &h888888
-         BracketHighlightColor=   "&cFFFF00"
+         BracketHighlightColor=   &h00FF0000
          CaretColor      =   "&c000000"
          ClearHighlightedRangesOnTextChange=   true
          DirtyLinesColor =   "&cFF9999"
@@ -169,11 +171,11 @@ Begin Window MainWindow
          EraseBackground =   ""
          GutterBackgroundColor=   "&cEEEEEE"
          GutterSeparationLineColor=   "&c888888"
-         Height          =   259
+         Height          =   242
          HelpTag         =   ""
          HighlightBlocksOnMouseOverGutter=   true
          HighlightMatchingBrackets=   true
-         HighlightMatchingBracketsMode=   0
+         HighlightMatchingBracketsMode=   1
          ignoreRepaint   =   0
          Index           =   -2147483648
          InitialParent   =   "TabPanel1"
@@ -203,82 +205,7 @@ Begin Window MainWindow
          Top             =   40
          UseFocusRing    =   True
          Visible         =   True
-         Width           =   533
-      End
-      Begin Slider Throttle
-         AutoDeactivate  =   True
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   397
-         LineStep        =   1
-         LiveScroll      =   ""
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Maximum         =   15
-         Minimum         =   1
-         PageStep        =   1
-         Scope           =   0
-         TabIndex        =   0
-         TabPanelIndex   =   4
-         TabStop         =   True
-         TickStyle       =   0
-         Top             =   58
-         Value           =   2
-         Visible         =   True
-         Width           =   167
-      End
-      Begin Label Label1
-         AutoDeactivate  =   True
-         Bold            =   ""
-         DataField       =   ""
-         DataSource      =   ""
-         Enabled         =   True
-         Height          =   20
-         HelpTag         =   ""
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Italic          =   ""
-         Left            =   397
-         LockBottom      =   ""
-         LockedInPosition=   False
-         LockLeft        =   True
-         LockRight       =   ""
-         LockTop         =   True
-         Multiline       =   ""
-         Scope           =   0
-         Selectable      =   False
-         TabIndex        =   1
-         TabPanelIndex   =   4
-         Text            =   "Throttle (lower is faster):"
-         TextAlign       =   0
-         TextColor       =   0
-         TextFont        =   "System"
-         TextSize        =   0
-         TextUnit        =   0
-         Top             =   36
-         Transparent     =   True
-         Underline       =   ""
-         Visible         =   True
-         Width           =   167
-      End
-      Begin RbScript Script
-         EncodingFont    =   ""
-         Height          =   32
-         Index           =   -2147483648
-         InitialParent   =   "TabPanel1"
-         Left            =   885
-         LockedInPosition=   False
-         Scope           =   0
-         Source          =   ""
-         TabPanelIndex   =   4
-         Top             =   36
-         Width           =   32
+         Width           =   513
       End
       Begin CustomEditField OnPaint
          AcceptFocus     =   ""
@@ -288,6 +215,7 @@ Begin Window MainWindow
          AutoDeactivate  =   True
          AutoIndentNewLines=   true
          BackColor       =   16777215
+         Backdrop        =   ""
          Border          =   True
          BorderColor     =   &h888888
          BracketHighlightColor=   &h00FF0000
@@ -305,7 +233,7 @@ Begin Window MainWindow
          EraseBackground =   ""
          GutterBackgroundColor=   "&cEEEEEE"
          GutterSeparationLineColor=   "&c888888"
-         Height          =   258
+         Height          =   242
          HelpTag         =   ""
          HighlightBlocksOnMouseOverGutter=   true
          HighlightMatchingBrackets=   true
@@ -339,7 +267,258 @@ Begin Window MainWindow
          Top             =   40
          UseFocusRing    =   True
          Visible         =   True
+         Width           =   513
+      End
+      Begin Label ErrorStatus
+         AutoDeactivate  =   True
+         Bold            =   ""
+         DataField       =   ""
+         DataSource      =   ""
+         Enabled         =   True
+         Height          =   20
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Italic          =   ""
+         Left            =   397
+         LockBottom      =   ""
+         LockedInPosition=   False
+         LockLeft        =   True
+         LockRight       =   ""
+         LockTop         =   True
+         Multiline       =   ""
+         Scope           =   0
+         Selectable      =   False
+         TabIndex        =   0
+         TabPanelIndex   =   4
+         Text            =   "Not checked"
+         TextAlign       =   0
+         TextColor       =   &h000000
+         TextFont        =   "System"
+         TextSize        =   0
+         TextUnit        =   0
+         Top             =   40
+         Transparent     =   False
+         Underline       =   ""
+         Visible         =   True
+         Width           =   527
+      End
+      Begin Listbox ErrorList
+         AutoDeactivate  =   True
+         AutoHideScrollbars=   True
+         Bold            =   ""
+         Border          =   True
+         ColumnCount     =   3
+         ColumnsResizable=   ""
+         ColumnWidths    =   "5%,70%,*"
+         DataField       =   ""
+         DataSource      =   ""
+         DefaultRowHeight=   -1
+         Enabled         =   True
+         EnableDrag      =   ""
+         EnableDragReorder=   ""
+         GridLinesHorizontal=   0
+         GridLinesVertical=   0
+         HasHeading      =   True
+         HeadingIndex    =   -1
+         Height          =   232
+         HelpTag         =   ""
+         Hierarchical    =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         InitialValue    =   "#	Description	Location"
+         Italic          =   ""
+         Left            =   397
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   True
+         LockRight       =   True
+         LockTop         =   True
+         RequiresSelection=   ""
+         Scope           =   0
+         ScrollbarHorizontal=   ""
+         ScrollBarVertical=   True
+         SelectionType   =   0
+         TabIndex        =   1
+         TabPanelIndex   =   4
+         TabStop         =   True
+         TextFont        =   "System"
+         TextSize        =   0
+         TextUnit        =   0
+         Top             =   66
+         Underline       =   ""
+         UseFocusRing    =   True
+         Visible         =   True
          Width           =   533
+         _ScrollWidth    =   -1
+      End
+      Begin ScrollBar PaintScrollUpDown
+         AcceptFocus     =   true
+         AutoDeactivate  =   True
+         Enabled         =   True
+         Height          =   242
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Left            =   910
+         LineStep        =   1
+         LiveScroll      =   ""
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   False
+         LockRight       =   True
+         LockTop         =   True
+         Maximum         =   100
+         Minimum         =   0
+         PageStep        =   20
+         Scope           =   0
+         TabIndex        =   2
+         TabPanelIndex   =   1
+         TabStop         =   True
+         Top             =   40
+         Value           =   0
+         Visible         =   True
+         Width           =   16
+      End
+      Begin ScrollBar PaintScrollLeftRight
+         AcceptFocus     =   true
+         AutoDeactivate  =   True
+         Enabled         =   True
+         Height          =   16
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Left            =   397
+         LineStep        =   1
+         LiveScroll      =   ""
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   True
+         LockRight       =   True
+         LockTop         =   False
+         Maximum         =   100
+         Minimum         =   0
+         PageStep        =   20
+         Scope           =   0
+         TabIndex        =   3
+         TabPanelIndex   =   1
+         TabStop         =   True
+         Top             =   283
+         Value           =   0
+         Visible         =   True
+         Width           =   513
+      End
+      Begin ScrollBar ClickScrollUpDown
+         AcceptFocus     =   true
+         AutoDeactivate  =   True
+         Enabled         =   True
+         Height          =   242
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Left            =   910
+         LineStep        =   1
+         LiveScroll      =   ""
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   False
+         LockRight       =   True
+         LockTop         =   True
+         Maximum         =   100
+         Minimum         =   0
+         PageStep        =   20
+         Scope           =   0
+         TabIndex        =   2
+         TabPanelIndex   =   2
+         TabStop         =   True
+         Top             =   40
+         Value           =   0
+         Visible         =   True
+         Width           =   16
+      End
+      Begin ScrollBar ClickScrollLeftRight
+         AcceptFocus     =   true
+         AutoDeactivate  =   True
+         Enabled         =   True
+         Height          =   16
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Left            =   397
+         LineStep        =   1
+         LiveScroll      =   ""
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   True
+         LockRight       =   True
+         LockTop         =   False
+         Maximum         =   100
+         Minimum         =   0
+         PageStep        =   20
+         Scope           =   0
+         TabIndex        =   3
+         TabPanelIndex   =   2
+         TabStop         =   True
+         Top             =   283
+         Value           =   0
+         Visible         =   True
+         Width           =   513
+      End
+      Begin ScrollBar MouseMoveScrollUpDown
+         AcceptFocus     =   true
+         AutoDeactivate  =   True
+         Enabled         =   True
+         Height          =   242
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Left            =   910
+         LineStep        =   1
+         LiveScroll      =   ""
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   False
+         LockRight       =   True
+         LockTop         =   True
+         Maximum         =   100
+         Minimum         =   0
+         PageStep        =   20
+         Scope           =   0
+         TabIndex        =   2
+         TabPanelIndex   =   3
+         TabStop         =   True
+         Top             =   40
+         Value           =   0
+         Visible         =   True
+         Width           =   16
+      End
+      Begin ScrollBar MouseMoveScrollLeftRight
+         AcceptFocus     =   true
+         AutoDeactivate  =   True
+         Enabled         =   True
+         Height          =   16
+         HelpTag         =   ""
+         Index           =   -2147483648
+         InitialParent   =   "TabPanel1"
+         Left            =   397
+         LineStep        =   1
+         LiveScroll      =   ""
+         LockBottom      =   True
+         LockedInPosition=   False
+         LockLeft        =   True
+         LockRight       =   True
+         LockTop         =   False
+         Maximum         =   100
+         Minimum         =   0
+         PageStep        =   20
+         Scope           =   0
+         TabIndex        =   3
+         TabPanelIndex   =   3
+         TabStop         =   True
+         Top             =   283
+         Value           =   0
+         Visible         =   True
+         Width           =   513
       End
    End
    Begin BevelButton BevelButton1
@@ -451,6 +630,19 @@ Begin Window MainWindow
       Visible         =   True
       Width           =   676
    End
+   Begin RbScript Script
+      EncodingFont    =   ""
+      Height          =   32
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   1014
+      LockedInPosition=   False
+      Scope           =   0
+      Source          =   ""
+      TabPanelIndex   =   0
+      Top             =   31
+      Width           =   32
+   End
 End
 #tag EndWindow
 
@@ -468,7 +660,7 @@ End
 
 	#tag Event
 		Sub Resizing()
-		  If BevelButton1.Value And Ticks Mod Throttle.Value = 0 Then
+		  If BevelButton1.Value Then
 		    If Script.State = RbScript.kStateRunning Then Return
 		    Script.Source = OnPaint.Text
 		    Script.Context = ScriptCanvas1
@@ -512,12 +704,10 @@ End
 		  #pragma Unused X
 		  #pragma Unused Y
 		  If BevelButton1.Value Then
-		    If Ticks Mod Throttle.Value = 0 Then
-		      If Script.State = RbScript.kStateRunning Then Return
-		      Script.Source = OnMouseMove.Text
-		      Script.Context = ScriptCanvas1
-		      Script.Run
-		    End If
+		    If Script.State = RbScript.kStateRunning Then Return
+		    Script.Source = OnMouseMove.Text
+		    Script.Context = ScriptCanvas1
+		    Script.Run
 		  End If
 		End Sub
 	#tag EndEvent
@@ -567,6 +757,7 @@ End
 		    Me.SyntaxDefinition = def
 		    
 		  end if
+		  Me.SetScrollbars(ClickScrollLeftRight, ClickScrollUpDown)
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -578,47 +769,7 @@ End
 		    Me.SyntaxDefinition = def
 		    
 		  end if
-		End Sub
-	#tag EndEvent
-#tag EndEvents
-#tag Events Script
-	#tag Event
-		Sub CompilerError(line As Integer, errorNumber As Integer, errorMsg As String)
-		  #pragma Unused errorMsg
-		  ScriptStatus.Text = "Error in script on line " + Str(line) + ": (" +Str(errorNumber) + ") " + ScriptCanvas.ErrorCodeToString(ErrorNumber)
-		  Select Case Mode
-		  Case Mode_Paint
-		    OnPaint.AddBookmark(line)
-		  Case Mode_Click
-		    OnClick.AddBookmark(line)
-		  Case Mode_Mouse
-		    OnMouseMove.AddBookmark(line)
-		  End Select
-		  ErrorCount = ErrorCount + 1
-		End Sub
-	#tag EndEvent
-	#tag Event
-		Sub Print(msg As String)
-		  MsgBox(msg)
-		End Sub
-	#tag EndEvent
-	#tag Event
-		Function Input(prompt As String) As String
-		  Call MsgBox(prompt, 0, "Script asked for input!")
-		  Return "Don't call 'Input'!"
-		End Function
-	#tag EndEvent
-	#tag Event
-		Sub RuntimeError(line As Integer, error As RuntimeException)
-		  ScriptStatus.Text = "Error in script on line " + Str(line) + ": (" +Str(error.ErrorNumber) + ") " + error.Message
-		  Select Case Mode
-		  Case Mode_Paint
-		    OnPaint.AddBookmark(line)
-		  Case Mode_Click
-		    OnClick.AddBookmark(line)
-		  Case Mode_Mouse
-		    OnMouseMove.AddBookmark(line)
-		  End Select
+		  Me.SetScrollbars(MouseMoveScrollLeftRight, MouseMoveScrollUpDown)
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -630,6 +781,69 @@ End
 		    Me.SyntaxDefinition = def
 		    
 		  end if
+		  Me.SetScrollbars(PaintScrollLeftRight, PaintScrollUpDown)
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events ErrorList
+	#tag Event
+		Sub DoubleClick()
+		  If Me.ListIndex > -1 Then
+		    Select Case Me.RowTag(Me.ListIndex)
+		    Case Mode_Paint
+		      TabPanel1.Value = 0
+		      OnPaint.SelectLine(Me.CellTag(Me.ListIndex, 2))
+		    Case Mode_Click
+		      TabPanel1.Value = 1
+		      OnClick.SelectLine(Me.CellTag(Me.ListIndex, 2))
+		    Case Mode_Mouse
+		      TabPanel1.Value = 2
+		      OnMouseMove.SelectLine(Me.CellTag(Me.ListIndex, 2))
+		    End Select
+		  End If
+		  
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events PaintScrollUpDown
+	#tag Event
+		Sub ValueChanged()
+		  OnPaint.ScrollPosition = Me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events PaintScrollLeftRight
+	#tag Event
+		Sub ValueChanged()
+		  OnPaint.ScrollPositionX = Me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events ClickScrollUpDown
+	#tag Event
+		Sub ValueChanged()
+		  OnClick.ScrollPosition = Me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events ClickScrollLeftRight
+	#tag Event
+		Sub ValueChanged()
+		  OnClick.ScrollPositionX = Me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events MouseMoveScrollUpDown
+	#tag Event
+		Sub ValueChanged()
+		  OnMouseMove.ScrollPosition = Me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events MouseMoveScrollLeftRight
+	#tag Event
+		Sub ValueChanged()
+		  OnMouseMove.ScrollPositionX = Me.Value
 		End Sub
 	#tag EndEvent
 #tag EndEvents
@@ -637,6 +851,7 @@ End
 	#tag Event
 		Sub Action()
 		  ScriptStatus.Text = ""
+		  ErrorStatus.Text = ""
 		  If Not Me.Value Then
 		    Script.Reset
 		    Script.Source = ""
@@ -655,6 +870,12 @@ End
 #tag Events CheckButton
 	#tag Event
 		Sub Action()
+		  OnClick.ClearBookmarks
+		  OnMouseMove.ClearBookmarks
+		  OnPaint.ClearBookmarks
+		  ErrorList.DeleteAllRows
+		  ErrorStatus.Text = "Checking..."
+		  
 		  ErrorCount = 0
 		  Script.Reset
 		  Script.Context = ScriptCanvas1
@@ -687,6 +908,64 @@ End
 		  Else
 		    ScriptStatus.Text = "Check complete, no errors."
 		  End If
+		  
+		  ErrorStatus.Text = ScriptStatus.Text
+		  If ErrorCount > 0 Then
+		    TabPanel1.Caption(3) = "Errors (" + Str(ErrorCount) + ")"
+		  Else
+		    TabPanel1.Caption(3) = "Errors"
+		  End If
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events Script
+	#tag Event
+		Sub CompilerError(line As Integer, errorNumber As Integer, errorMsg As String)
+		  #pragma Unused errorMsg
+		  ScriptStatus.Text = "Error in script on line " + Str(line) + ": (" +Str(errorNumber) + ") " + ScriptCanvas.ErrorCodeToString(ErrorNumber)
+		  Select Case Mode
+		  Case Mode_Paint
+		    OnPaint.AddBookmark(line)
+		    ErrorList.AddRow(Str(errorNumber), ScriptCanvas.ErrorCodeToString(ErrorNumber), "OnPaint, line: " + Str(line))
+		    ErrorList.RowTag(ErrorList.LastIndex) = Mode_Paint
+		    ErrorList.CellTag(ErrorList.LastIndex, 2) = line
+		  Case Mode_Click
+		    OnClick.AddBookmark(line)
+		    ErrorList.AddRow(Str(errorNumber), ScriptCanvas.ErrorCodeToString(ErrorNumber), "OnClick, line: " + Str(line))
+		    ErrorList.RowTag(ErrorList.LastIndex) = Mode_Click
+		    ErrorList.CellTag(ErrorList.LastIndex, 2) = line
+		  Case Mode_Mouse
+		    OnMouseMove.AddBookmark(line)
+		    ErrorList.AddRow(Str(errorNumber), ScriptCanvas.ErrorCodeToString(ErrorNumber), "OnMouseMove, line: " + Str(line))
+		    ErrorList.RowTag(ErrorList.LastIndex) = Mode_Mouse
+		    ErrorList.CellTag(ErrorList.LastIndex, 2) = line
+		  End Select
+		  ErrorCount = ErrorCount + 1
+		  ErrorStatus.Text = Str(ErrorCount) + " errors found."
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Sub Print(msg As String)
+		  MsgBox(msg)
+		End Sub
+	#tag EndEvent
+	#tag Event
+		Function Input(prompt As String) As String
+		  Call MsgBox(prompt, 0, "Script asked for input!")
+		  Return "Don't call 'Input'!"
+		End Function
+	#tag EndEvent
+	#tag Event
+		Sub RuntimeError(line As Integer, error As RuntimeException)
+		  ScriptStatus.Text = "Error in script on line " + Str(line) + ": (" +Str(error.ErrorNumber) + ") " + error.Message
+		  Select Case Mode
+		  Case Mode_Paint
+		    OnPaint.AddBookmark(line)
+		  Case Mode_Click
+		    OnClick.AddBookmark(line)
+		  Case Mode_Mouse
+		    OnMouseMove.AddBookmark(line)
+		  End Select
 		End Sub
 	#tag EndEvent
 #tag EndEvents
