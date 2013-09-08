@@ -1,9 +1,8 @@
 #tag Window
 Begin Window SuggestionWindow
-   BackColor       =   &cFFFFFF00
+   BackColor       =   "&cFFFFFF00"
    Backdrop        =   0
    CloseButton     =   False
-   Compatibility   =   ""
    Composite       =   False
    Frame           =   3
    FullScreen      =   False
@@ -56,7 +55,7 @@ Begin Window SuggestionWindow
       LockRight       =   True
       LockTop         =   True
       RequiresSelection=   False
-      Scope           =   "0"
+      Scope           =   0
       ScrollbarHorizontal=   False
       ScrollBarVertical=   True
       SelectionType   =   0
@@ -75,20 +74,20 @@ Begin Window SuggestionWindow
    End
    Begin Timer Timer1
       Enabled         =   True
-      Height          =   "32"
+      Height          =   32
       Index           =   -2147483648
       InitialParent   =   ""
       Left            =   0
       LockedInPosition=   False
       Mode            =   0
       Period          =   10
-      Scope           =   "0"
-      TabIndex        =   "1"
+      Scope           =   0
+      TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
       Top             =   305
       Visible         =   True
-      Width           =   "32"
+      Width           =   32
    End
 End
 #tag EndWindow

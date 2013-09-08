@@ -3,9 +3,8 @@ Begin ContainerControl CustomScrollableEditField
    AcceptFocus     =   False
    AcceptTabs      =   False
    AutoDeactivate  =   True
-   BackColor       =   &cFFFFFF00
+   BackColor       =   "&cFFFFFF00"
    Backdrop        =   0
-   Compatibility   =   ""
    Enabled         =   True
    EraseBackground =   True
    HasBackColor    =   False
@@ -21,7 +20,6 @@ Begin ContainerControl CustomScrollableEditField
    TabPanelIndex   =   0
    TabStop         =   false
    Top             =   32
-   Transparent     =   True
    UseFocusRing    =   True
    Visible         =   True
    Width           =   208
@@ -32,13 +30,8 @@ Begin ContainerControl CustomScrollableEditField
       AutocompleteAppliesStandardCase=   true
       AutoDeactivate  =   True
       AutoIndentNewLines=   true
-      BackColor       =   
       Border          =   true
-      BorderColor     =   
-      BracketHighlightColor=   
-      CaretColor      =   
       ClearHighlightedRangesOnTextChange=   true
-      DirtyLinesColor =   
       DisplayDirtyLines=   True
       DisplayInvisibleCharacters=   False
       DisplayLineNumbers=   True
@@ -48,8 +41,6 @@ Begin ContainerControl CustomScrollableEditField
       Enabled         =   True
       EnableLineFoldings=   False
       EraseBackground =   False
-      GutterBackgroundColor=   
-      GutterSeparationLineColor=   
       Height          =   102
       HelpTag         =   ""
       HighlightBlocksOnMouseOverGutter=   true
@@ -60,7 +51,6 @@ Begin ContainerControl CustomScrollableEditField
       InitialParent   =   ""
       Left            =   0
       leftMarginOffset=   4
-      LineNumbersColor=   
       LineNumbersTextFont=   "System"
       LineNumbersTextSize=   9
       LockBottom      =   True
@@ -71,14 +61,12 @@ Begin ContainerControl CustomScrollableEditField
       ReadOnly        =   False
       RightMarginAtPixel=   0
       RightScrollMargin=   150
-      Scope           =   "2"
+      Scope           =   2
       TabIndex        =   0
       TabPanelIndex   =   0
       TabStop         =   True
       Text            =   ""
-      TextColor       =   
       TextFont        =   "System"
-      TextSelectionColor=   
       TextSize        =   0
       ThickInsertionPoint=   true
       Top             =   0
@@ -105,7 +93,7 @@ Begin ContainerControl CustomScrollableEditField
       Maximum         =   100
       Minimum         =   0
       PageStep        =   20
-      Scope           =   "2"
+      Scope           =   2
       TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
@@ -133,7 +121,7 @@ Begin ContainerControl CustomScrollableEditField
       Maximum         =   100
       Minimum         =   0
       PageStep        =   20
-      Scope           =   "2"
+      Scope           =   2
       TabIndex        =   2
       TabPanelIndex   =   0
       TabStop         =   True
@@ -303,7 +291,7 @@ End
 	#tag EndEvent
 
 	#tag Event
-		Sub Paint(g As Graphics, areas() As REALbasic.Rect)
+		Sub Paint(g As Graphics)
 		  self.updateFocusRing
 		End Sub
 	#tag EndEvent

@@ -344,7 +344,7 @@ Implements MessageReceiver
 	#tag EndEvent
 
 	#tag Event
-		Sub Paint(g As Graphics, areas() As REALbasic.Rect)
+		Sub Paint(g As Graphics)
 		  DrawContents(g)
 		End Sub
 	#tag EndEvent
@@ -2170,7 +2170,7 @@ Implements MessageReceiver
 		  
 		  dim drag as Picture = SelectedTextDragImage
 		  dim di as DragItem
-		  #If RBVersion >= 2010 Then
+		  #If RBVersion >= 2012 Then
 		    di = New DragItem(Self, x,y, drag.Width, drag.Height)
 		  #Else
 		    di = NewDragItem(x,y, drag.Width, drag.Height)
@@ -5684,12 +5684,14 @@ Implements MessageReceiver
 			Visible=true
 			Group="Behavior"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="AcceptTabs"
 			Visible=true
 			Group="Behavior"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="AutoCloseBrackets"
@@ -5711,6 +5713,7 @@ Implements MessageReceiver
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="AutoIndentNewLines"
@@ -5732,6 +5735,7 @@ Implements MessageReceiver
 			Group="Appearance"
 			Type="Picture"
 			EditorType="Picture"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Border"
@@ -5821,6 +5825,7 @@ Implements MessageReceiver
 			Group="Behavior"
 			InitialValue="False"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="EnableAutocomplete"
@@ -5835,6 +5840,7 @@ Implements MessageReceiver
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="EnableLineFoldings"
@@ -5849,6 +5855,7 @@ Implements MessageReceiver
 			Group="Behavior"
 			InitialValue="True"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="GutterBackgroundColor"
@@ -5876,6 +5883,7 @@ Implements MessageReceiver
 			Group="Position"
 			InitialValue="100"
 			Type="Integer"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="HelpTag"
@@ -5883,6 +5891,7 @@ Implements MessageReceiver
 			Group="Appearance"
 			Type="String"
 			EditorType="MultiLineEditor"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="HighlightBlocksOnMouseOverGutter"
@@ -5921,16 +5930,18 @@ Implements MessageReceiver
 			Visible=true
 			Group="ID"
 			Type="Integer"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="InitialParent"
-			Type="String"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Left"
 			Visible=true
 			Group="Position"
 			Type="Integer"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="leftMarginOffset"
@@ -5966,24 +5977,28 @@ Implements MessageReceiver
 			Visible=true
 			Group="Position"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockLeft"
 			Visible=true
 			Group="Position"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockRight"
 			Visible=true
 			Group="Position"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="LockTop"
 			Visible=true
 			Group="Position"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="MaxVisibleLines"
@@ -5996,6 +6011,7 @@ Implements MessageReceiver
 			Visible=true
 			Group="ID"
 			Type="String"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ReadOnly"
@@ -6058,7 +6074,7 @@ Implements MessageReceiver
 			Name="Super"
 			Visible=true
 			Group="ID"
-			Type="String"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabIndex"
@@ -6066,12 +6082,14 @@ Implements MessageReceiver
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabPanelIndex"
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabStop"
@@ -6079,6 +6097,7 @@ Implements MessageReceiver
 			Group="Position"
 			InitialValue="True"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="TabWidth"
@@ -6145,14 +6164,6 @@ Implements MessageReceiver
 			Visible=true
 			Group="Position"
 			Type="Integer"
-		#tag EndViewProperty
-		#tag ViewProperty
-			Name="Transparent"
-			Visible=true
-			Group="Behavior"
-			InitialValue="True"
-			Type="Boolean"
-			EditorType="Boolean"
 			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -6161,6 +6172,7 @@ Implements MessageReceiver
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Visible"
@@ -6168,6 +6180,7 @@ Implements MessageReceiver
 			Group="Appearance"
 			InitialValue="True"
 			Type="Boolean"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Width"
@@ -6175,6 +6188,7 @@ Implements MessageReceiver
 			Group="Position"
 			InitialValue="100"
 			Type="Integer"
+			InheritedFrom="canvas"
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
