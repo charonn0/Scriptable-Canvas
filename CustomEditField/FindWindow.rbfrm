@@ -2,7 +2,6 @@
 Begin Window FindWindow
    BackColor       =   16777215
    Backdrop        =   ""
-   BalloonHelp     =   ""
    CloseButton     =   True
    Composite       =   False
    Frame           =   0
@@ -25,7 +24,7 @@ Begin Window FindWindow
    Title           =   "Find"
    Visible         =   True
    Width           =   527
-   Begin StaticText StaticText1
+   Begin Label StaticText1
       AutoDeactivate  =   True
       Bold            =   ""
       DataField       =   ""
@@ -57,7 +56,7 @@ Begin Window FindWindow
       Visible         =   True
       Width           =   100
    End
-   Begin StaticText StaticText2
+   Begin Label StaticText2
       AutoDeactivate  =   True
       Bold            =   ""
       DataField       =   ""
@@ -329,7 +328,7 @@ Begin Window FindWindow
       Visible         =   True
       Width           =   80
    End
-   Begin StaticText results
+   Begin Label results
       AutoDeactivate  =   True
       Bold            =   ""
       DataField       =   ""
