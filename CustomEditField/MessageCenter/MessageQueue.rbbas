@@ -3,17 +3,21 @@ Protected Class MessageQueue
 Inherits Timer
 	#tag Event
 		Sub Action()
-		  //timer tick... send the next queued msg
+		  // Timer tick... send the next queued msg
 		  if ubound(queue)<0 then return
 		  
 		  dim msg as Message
-		  msg=queue(0)
+		  msg = queue(0)
 		  queue.remove(0)
 		  
 		  MessageCenter.sendMessage(msg)
-		  //if queue empty, stop timer
-		  if UBound(queue)<0 then me.Mode=0
 		  
+		  // if queue not empty, keep timer running
+		  if UBound(queue) >= 0 then
+		    me.Mode = Timer.ModeSingle
+		  else
+		    me.Mode = Timer.ModeOff ' necessary for RB 2012r2.1 in Cocoa - fixed in Xojo
+		  end
 		End Sub
 	#tag EndEvent
 
@@ -21,10 +25,29 @@ Inherits Timer
 	#tag Method, Flags = &h0
 		Sub addMessage(theMessage as Message)
 		  queue.append theMessage
-		  //start timer if stopped.
-		  if me.Mode=0 then me.Mode=2
+		  
+		  if me.Mode = Timer.ModeOff then
+		    me.Mode = Timer.ModeSingle
+		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h1000
+		Sub Constructor()
+		  me.Mode = Timer.ModeOff
+		  me.Period = 0 // -> delivers as soon as possible, after the current event
 		  
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function findMessageInQueue(type as variant, matchInfoKey as Variant, matchInfoValue as Variant) As Message
+		  for each m as Message in queue
+		    if m.MessageType = type and m.Info(matchInfoKey) = matchInfoValue then
+		      return m
+		    end
+		  next
+		End Function
 	#tag EndMethod
 
 

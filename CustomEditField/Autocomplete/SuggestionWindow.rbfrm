@@ -1,7 +1,7 @@
 #tag Window
 Begin Window SuggestionWindow
-   BackColor       =   "&cFFFFFF00"
-   Backdrop        =   0
+   BackColor       =   16777215
+   Backdrop        =   ""
    CloseButton     =   False
    Composite       =   False
    Frame           =   3
@@ -14,7 +14,7 @@ Begin Window SuggestionWindow
    MaxHeight       =   32000
    MaximizeButton  =   False
    MaxWidth        =   32000
-   MenuBar         =   0
+   MenuBar         =   ""
    MenuBarVisible  =   True
    MinHeight       =   64
    MinimizeButton  =   False
@@ -27,45 +27,45 @@ Begin Window SuggestionWindow
    Begin ListBox optionList
       AutoDeactivate  =   True
       AutoHideScrollbars=   True
-      Bold            =   False
+      Bold            =   ""
       ColumnCount     =   1
-      ColumnsResizable=   False
+      ColumnsResizable=   ""
       ColumnWidths    =   ""
       DataField       =   ""
       DataSource      =   ""
       DefaultRowHeight=   14
       Enabled         =   True
-      EnableDrag      =   False
-      EnableDragReorder=   False
+      EnableDrag      =   ""
+      EnableDragReorder=   ""
       GridLinesHorizontal=   0
       GridLinesVertical=   0
-      HasHeading      =   False
+      HasHeading      =   ""
       HeadingIndex    =   -1
       Height          =   300
       HelpTag         =   ""
-      Hierarchical    =   False
+      Hierarchical    =   ""
       Index           =   -2147483648
       InitialParent   =   ""
       InitialValue    =   ""
-      Italic          =   False
+      Italic          =   ""
       Left            =   0
       LockBottom      =   True
       LockedInPosition=   False
       LockLeft        =   True
       LockRight       =   True
       LockTop         =   True
-      RequiresSelection=   False
+      RequiresSelection=   ""
       Scope           =   0
-      ScrollbarHorizontal=   False
+      ScrollbarHorizontal=   ""
       ScrollBarVertical=   True
       SelectionType   =   0
       TabIndex        =   0
       TabPanelIndex   =   0
       TabStop         =   True
       TextFont        =   "SmallSystem"
-      TextSize        =   0.0
+      TextSize        =   0
       Top             =   0
-      Underline       =   False
+      Underline       =   ""
       UseFocusRing    =   False
       Visible         =   True
       Width           =   120
@@ -76,7 +76,6 @@ Begin Window SuggestionWindow
       Enabled         =   True
       Height          =   32
       Index           =   -2147483648
-      InitialParent   =   ""
       Left            =   0
       LockedInPosition=   False
       Mode            =   0
@@ -123,6 +122,7 @@ End
 
 	#tag Method, Flags = &h21
 		Private Sub ChangeWindowStyle(w as Window, flag as Integer, set as Boolean)
+		  #pragma unused set
 		  #if TargetWin32
 		    Dim oldFlags as Integer
 		    Dim newFlags as Integer
@@ -142,7 +142,7 @@ End
 		    Declare Function SetWindowPos Lib "user32" (hwnd as Integer, hWndInstertAfter as Integer, _
 		    x as Integer, y as Integer, cx as Integer, cy as Integer, flags as Integer) as Integer
 		    
-		    oldFlags = GetWindowLong(w.WinHWND, GWL_STYLE)
+		    oldFlags = GetWindowLong(w.Handle, GWL_STYLE)
 		    
 		    if not set then
 		      newFlags = BitwiseAnd( oldFlags, Bitwise.OnesComplement( flag ) )
@@ -151,9 +151,12 @@ End
 		    end
 		    
 		    
-		    styleFlags = SetWindowLong( w.WinHWND, GWL_STYLE, newFlags )
-		    styleFlags = SetWindowPos( w.WinHWND, 0, 0, 0, 0, 0, SWP_NOMOVE +_
+		    styleFlags = SetWindowLong( w.Handle, GWL_STYLE, newFlags )
+		    styleFlags = SetWindowPos( w.Handle, 0, 0, 0, 0, 0, SWP_NOMOVE +_
 		    SWP_NOSIZE + SWP_NOZORDER + SWP_FRAMECHANGED )
+		  #else
+		    #pragma unused w
+		    #pragma unused flag
 		  #endif
 		End Sub
 	#tag EndMethod
@@ -257,6 +260,9 @@ End
 #tag Events optionList
 	#tag Event
 		Function CellClick(row as Integer, column as Integer, x as Integer, y as Integer) As Boolean
+		  #pragma unused x
+		  #pragma unused y
+		  
 		  submit(me.cell(row,column))
 		End Function
 	#tag EndEvent

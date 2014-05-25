@@ -1,34 +1,40 @@
 #tag Class
 Protected Class UndoManager
 	#tag Method, Flags = &h1
-		Protected Sub addActionToRedoStack(action as undoableAction)
+		Protected Sub addActionToRedoStack(action as UndoableAction)
 		  RedoStack.Append action
-		  UndoValue = UndoValue - 1
+		  undoStackIndex = undoStackIndex - 1
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Sub addActionToUndoStack(action as undoableAction)
+		Protected Sub addActionToUndoStack(action as UndoableAction)
 		  UndoStack.Append action
-		  UndoValue = UndoValue + 1
+		  undoStackIndex = undoStackIndex + 1
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function isDirty() As boolean
-		  Return UndoValue <> 0
+		Sub Constructor()
+		  mEnabled = true
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function IsDirty() As boolean
+		  Return undoStackIndex <> 0
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function isUndoing() As boolean
+		Function IsUndoing() As boolean
 		  Return undoing
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Push(action as undoableAction)
-		  if undoing then Return
+		Sub Push(action as UndoableAction)
+		  if undoing or not mEnabled then Return
 		  if action = nil then Return
 		  addActionToUndoStack(action)
 		  
@@ -49,19 +55,21 @@ Protected Class UndoManager
 		Sub Redo(id as integer)
 		  if not CanRedo then Return
 		  
-		  undoing = true
 		  dim match as Boolean
-		  
-		  if id = RedoStack(UBound(RedoStack)).EventID then
-		    dim action as UndoableAction = RedoStack.Pop
-		    addActionToUndoStack(action)
+		  do
+		    match = false
+		    undoing = true
 		    
-		    action.Redo
-		    match = true
-		  end if
-		  
-		  undoing = False
-		  if id <> 0 and CanRedo and match then Redo(ID)
+		    if id = RedoStack(UBound(RedoStack)).EventID then
+		      dim action as UndoableAction = RedoStack.Pop
+		      addActionToUndoStack(action)
+		      
+		      action.Redo
+		      match = true
+		    end if
+		    
+		    undoing = False
+		  loop until id = 0 or not CanRedo or not match
 		  
 		  EnableMenuItems
 		End Sub
@@ -71,7 +79,7 @@ Protected Class UndoManager
 		Sub Reset()
 		  ReDim UndoStack(-1)
 		  ReDim RedoStack(-1)
-		  UndoValue = 0
+		  undoStackIndex = 0
 		  undoing = False
 		  EnableMenuItems
 		End Sub
@@ -79,7 +87,7 @@ Protected Class UndoManager
 
 	#tag Method, Flags = &h0
 		Sub ResetDirtyFlag()
-		  UndoValue = 0
+		  undoStackIndex = 0
 		End Sub
 	#tag EndMethod
 
@@ -95,19 +103,21 @@ Protected Class UndoManager
 		Sub Undo(ID as integer)
 		  if not CanUndo then Return
 		  
-		  undoing = true
 		  dim match as Boolean
-		  
-		  if id = UndoStack(UBound(UndoStack)).EventID then
-		    dim action as UndoableAction = UndoStack.Pop
-		    addActionToRedoStack(action)
+		  do
+		    match = false
+		    undoing = true
 		    
-		    action.Undo
-		    match = true
-		  end if
-		  
-		  undoing = False
-		  if id <> 0 and CanUndo and match then undo(ID)
+		    if id = UndoStack(UBound(UndoStack)).EventID then
+		      dim action as UndoableAction = UndoStack.Pop
+		      addActionToRedoStack(action)
+		      
+		      action.Undo
+		      match = true
+		    end if
+		    
+		    undoing = False
+		  loop until id = 0 or not CanUndo or not match
 		  
 		  EnableMenuItems
 		  
@@ -115,10 +125,15 @@ Protected Class UndoManager
 	#tag EndMethod
 
 
+	#tag Note, Name = About
+		Part of CustomEditField
+	#tag EndNote
+
+
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Return UBound(RedoStack) > -1
+			  Return mEnabled and UBound(RedoStack) > -1
 			End Get
 		#tag EndGetter
 		CanRedo As boolean
@@ -127,14 +142,32 @@ Protected Class UndoManager
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Return UBound(UndoStack) > -1
+			  Return mEnabled and UBound(UndoStack) > -1
 			End Get
 		#tag EndGetter
 		CanUndo As boolean
 	#tag EndComputedProperty
 
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mEnabled
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mEnabled = value
+			End Set
+		#tag EndSetter
+		Enabled As Boolean
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h21
+		Private mEnabled As Boolean
+	#tag EndProperty
+
 	#tag Property, Flags = &h1
-		Protected RedoStack() As undoableAction
+		Protected RedoStack() As UndoableAction
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
@@ -142,11 +175,11 @@ Protected Class UndoManager
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
-		Protected UndoStack() As undoableAction
+		Protected UndoStack() As UndoableAction
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
-		Protected UndoValue As Integer
+		Protected undoStackIndex As Integer
 	#tag EndProperty
 
 
@@ -162,6 +195,11 @@ Protected Class UndoManager
 			Group="Behavior"
 			InitialValue="0"
 			Type="boolean"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="Enabled"
+			Group="Behavior"
+			Type="Boolean"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Index"

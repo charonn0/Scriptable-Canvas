@@ -4,7 +4,7 @@ Inherits timer
 	#tag Event
 		Sub Action()
 		  if owner = nil then Return
-		  owner.Redraw(true)
+		  owner.RedrawCaret
 		End Sub
 	#tag EndEvent
 

@@ -3,7 +3,7 @@ Begin Window FindWindow
    BackColor       =   16777215
    Backdrop        =   ""
    CloseButton     =   True
-   Composite       =   False
+   Composite       =   True
    Frame           =   0
    FullScreen      =   False
    HasBackColor    =   False
@@ -43,6 +43,7 @@ Begin Window FindWindow
       LockTop         =   True
       Multiline       =   ""
       Scope           =   0
+      Selectable      =   False
       TabIndex        =   0
       TabPanelIndex   =   0
       TabStop         =   True
@@ -51,7 +52,9 @@ Begin Window FindWindow
       TextColor       =   0
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   14
+      Transparent     =   False
       Underline       =   ""
       Visible         =   True
       Width           =   100
@@ -75,6 +78,7 @@ Begin Window FindWindow
       LockTop         =   True
       Multiline       =   ""
       Scope           =   0
+      Selectable      =   False
       TabIndex        =   1
       TabPanelIndex   =   0
       TabStop         =   True
@@ -83,7 +87,9 @@ Begin Window FindWindow
       TextColor       =   0
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   46
+      Transparent     =   False
       Underline       =   ""
       Visible         =   True
       Width           =   100
@@ -113,6 +119,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   15
       Underline       =   ""
       UseFocusRing    =   True
@@ -144,6 +151,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   47
       Underline       =   ""
       UseFocusRing    =   True
@@ -175,6 +183,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   79
       Underline       =   ""
       Value           =   True
@@ -206,6 +215,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   79
       Underline       =   ""
       Value           =   True
@@ -215,6 +225,7 @@ Begin Window FindWindow
    Begin PushButton btnReplaceAll
       AutoDeactivate  =   True
       Bold            =   ""
+      ButtonStyle     =   0
       Cancel          =   ""
       Caption         =   "Replace All"
       Default         =   ""
@@ -236,6 +247,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   114
       Underline       =   ""
       Visible         =   True
@@ -244,6 +256,7 @@ Begin Window FindWindow
    Begin PushButton btnReplace
       AutoDeactivate  =   True
       Bold            =   ""
+      ButtonStyle     =   0
       Cancel          =   ""
       Caption         =   "Replace"
       Default         =   ""
@@ -265,6 +278,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   114
       Underline       =   ""
       Visible         =   True
@@ -273,6 +287,7 @@ Begin Window FindWindow
    Begin PushButton btnReplaceAndFind
       AutoDeactivate  =   True
       Bold            =   ""
+      ButtonStyle     =   0
       Cancel          =   ""
       Caption         =   "Replace && Find"
       Default         =   ""
@@ -294,6 +309,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   114
       Underline       =   ""
       Visible         =   True
@@ -302,6 +318,7 @@ Begin Window FindWindow
    Begin PushButton btnNext
       AutoDeactivate  =   True
       Bold            =   ""
+      ButtonStyle     =   0
       Cancel          =   ""
       Caption         =   "Next"
       Default         =   True
@@ -323,6 +340,7 @@ Begin Window FindWindow
       TabStop         =   True
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   114
       Underline       =   ""
       Visible         =   True
@@ -347,6 +365,7 @@ Begin Window FindWindow
       LockTop         =   True
       Multiline       =   ""
       Scope           =   0
+      Selectable      =   False
       TabIndex        =   10
       TabPanelIndex   =   0
       TabStop         =   True
@@ -355,7 +374,9 @@ Begin Window FindWindow
       TextColor       =   8947848
       TextFont        =   "System"
       TextSize        =   0
+      TextUnit        =   0
       Top             =   79
+      Transparent     =   False
       Underline       =   ""
       Visible         =   True
       Width           =   150
@@ -370,6 +391,15 @@ End
 		  lastTop = me.top
 		  CurrentFindWindow = nil
 		End Sub
+	#tag EndEvent
+
+	#tag Event
+		Function KeyDown(Key As String) As Boolean
+		  if Key = Chr(3) or Key = Chr(13) then
+		    btnNext.Push
+		    return true
+		  end if
+		End Function
 	#tag EndEvent
 
 	#tag Event
@@ -399,6 +429,15 @@ End
 		  next
 		End Sub
 	#tag EndEvent
+
+
+	#tag MenuHandler
+		Function FileClose() As Boolean Handles FileClose.Action
+			self.Close
+			Return True
+			
+		End Function
+	#tag EndMenuHandler
 
 
 	#tag Method, Flags = &h1
@@ -489,14 +528,14 @@ End
 		  if Target = nil then Return
 		  
 		  dim count as Integer
-		  dim eventID as Integer = Ticks
+		  dim eventID as Integer = Ticks // -> grouped undo
 		  
 		  addFindTerm
 		  addReplaceTerm
 		  Target.ignoreRepaint = true
 		  dim startPos as Integer = 0 //start at begining of file
 		  while findNext(lastIgnoreCaseValue, false, false, startPos) //WITHOUT wrapping, since this could lead to an infinite loop if replacement contains find term.
-		    Target.Replace(Target.SelStart, Target.SelLength, lastReplaceTerm, eventID)
+		    Target.private_replace(Target.SelStart, Target.SelLength, lastReplaceTerm, true, eventID)
 		    count = count + 1
 		    startPos = Target.CaretPos //update startPos
 		  wend
@@ -562,12 +601,28 @@ End
 		  lastSearchTerm = me.Text
 		End Sub
 	#tag EndEvent
+	#tag Event
+		Function KeyDown(Key As String) As Boolean
+		  if Key = Chr(3) or Key = Chr(13) then
+		    btnNext.Push
+		    return true
+		  end if
+		End Function
+	#tag EndEvent
 #tag EndEvents
 #tag Events txtToReplace
 	#tag Event
 		Sub TextChanged()
 		  lastReplaceTerm = me.text
 		End Sub
+	#tag EndEvent
+	#tag Event
+		Function KeyDown(Key As String) As Boolean
+		  if Key = Chr(3) or Key = Chr(13) then
+		    btnNext.Push
+		    return true
+		  end if
+		End Function
 	#tag EndEvent
 #tag EndEvents
 #tag Events ignoreCase

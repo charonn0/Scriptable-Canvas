@@ -11,6 +11,14 @@ Implements IBufferStorage
 		Sub Constructor(size as integer)
 		  Storage = new MemoryBlock(size)
 		  
+		  // since this storage class can only handle single-byte characters, multi-byte strings need to be converted
+		  #if TargetWin32
+		    mSingleByteEncoding = encodings.WindowsANSI
+		  #elseif TargetLinux
+		    mSingleByteEncoding = encodings.ISOLatin1
+		  #else
+		    mSingleByteEncoding = encodings.MacRoman
+		  #endif
 		End Sub
 	#tag EndMethod
 
@@ -25,7 +33,8 @@ Implements IBufferStorage
 		  if from.size = 0 or length = 0 then Return //nuthin' to copy
 		  dim src as MemoryBlockStorage = MemoryBlockStorage(from)
 		  
-		  Storage.StringValue(localIndex, min(length, storage.Size - localIndex)) = src.Storage.StringValue(fromIndex, min(length, src.Size - fromIndex))
+		  me.Storage.StringValue(localIndex, min(length, storage.Size - localIndex)) = src.Storage.StringValue(fromIndex, min(length, src.Size - fromIndex))
+		  me.mSingleByteEncoding = src.mSingleByteEncoding
 		End Sub
 	#tag EndMethod
 
@@ -48,7 +57,7 @@ Implements IBufferStorage
 		  if length = 0 then Return ""
 		  if index >= Size then Return ""
 		  
-		  Return storage.StringValue(index, min(length, storage.Size - index))
+		  Return me.Storage.StringValue(index, min(length, storage.Size - index)).DefineEncoding(mSingleByteEncoding)
 		End Function
 	#tag EndMethod
 
@@ -57,16 +66,10 @@ Implements IBufferStorage
 		  // Part of the IBufferStorage interface.
 		  if length = 0 then Return
 		  
-		  //Couldn't make memory blocks work correclty with multi-byte chars, so I force the data to be single bit by re-encoding it.
-		  #if TargetWin32
-		    if value.encoding<> nil and (value.Encoding.Equals(encodings.UTF8) or value.Encoding.Equals(encodings.UTF16)) then'not value.Encoding.Equals(encodings.WindowsANSI) then
-		      value = value.ConvertEncoding(encodings.WindowsANSI)
-		    end if
-		  #else
-		    if value.encoding<> nil and (value.Encoding.Equals(encodings.UTF8) or value.Encoding.Equals(encodings.UTF16)) then'not value.Encoding.Equals(encodings.MacRoman) then
-		      value = value.ConvertEncoding(encodings.MacRoman)
-		    end if
-		  #endif
+		  //Couldn't make memory blocks work correclty with multi-byte chars, so I force the data to be single-byte by re-encoding it.
+		  if value.encoding<> nil and (value.Encoding.Equals(encodings.UTF8) or value.Encoding.Equals(encodings.UTF16)) then
+		    value = value.ConvertEncoding(mSingleByteEncoding)
+		  end if
 		  
 		  Storage.StringValue(index, length) = value
 		End Sub
@@ -75,9 +78,12 @@ Implements IBufferStorage
 
 	#tag Note, Name = Info
 		Text storage as a MemoryBlock
-		
 	#tag EndNote
 
+
+	#tag Property, Flags = &h21
+		Private mSingleByteEncoding As TextEncoding
+	#tag EndProperty
 
 	#tag Property, Flags = &h21
 		Private Storage As memoryBlock

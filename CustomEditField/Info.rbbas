@@ -1,7 +1,15 @@
 #tag Module
 Protected Module Info
 	#tag Note, Name = 1. Info
-		CustomEditField version 1.6.2
+		Note: The code is now hosted and updated here:
+		
+		  http://code.google.com/p/custom-editfield/
+		
+		The following is outdated information. For latest list of issues, see the above website!
+		
+		----------------------------------------------------
+		
+		CustomEditField
 		Well, here it is, a canvas-based, custom editfield.
 		Enjoy.
 		
@@ -31,7 +39,12 @@ Protected Module Info
 	#tag EndNote
 
 	#tag Note, Name = 2. Release Notes
-		Version history
+		Note: The code is now hosted and updated here:
+		
+		  http://code.google.com/p/custom-editfield/
+		
+		
+		Version history (not updated any more, see above link instead)
 		
 		1.6.2  9/5/2009
 		• Change: PlaceholderSelected event now has a paramter for when the placeholder is double-clicked.
@@ -128,7 +141,7 @@ Protected Module Info
 		• Fixed UTF support, utf(8/16) now works correctly (if UseMemoryBlockStorage = false), or at least it should!
 		• Highlight Contexts can now have a bold, italic and underline for tokens (bold/italic/underline = "true/false")
 		• Added convenience method to save contents to a file: Save(toFile as folderItem, encoding as textencoding = nil)
-		• Added line foldings!!! these are recognized by the code blocks tags.
+		• Added line foldings. These are recognized by the code blocks tags.
 		
 		1.3    5/16/2008
 		• Fixed a bug with the variable tab width setting, now, new lines or modified lines with tabs keep their tabWidth settings.
@@ -161,7 +174,6 @@ Protected Module Info
 		
 		0.8    4/29/2008
 		• initial release
-		
 	#tag EndNote
 
 	#tag Note, Name = 3. Docs
@@ -251,7 +263,7 @@ Protected Module Info
 		There's a new longest line in the field. Useful when handling your own Scrollbars.
 		
 		SelChanged(line as integer, column as integer, length as integer)
-		Same as SelChanged for a regular editfield, however, this event gives you the curret line number, column number and selection lenght.
+		Same as SelChanged for a regular editfield, however, this event gives you the curret line number, column number and selection length.
 		
 		ShouldTriggerAutocomplete(Key as string, hasAutocompleteOptions as boolean) as Boolean
 		key is the current pressed key, hasAutocompleteOptions is true if there any autocompleteOptions for the word where the caret is.
@@ -310,6 +322,7 @@ Protected Module Info
 		
 		CharPosAtLineNum(lineNumber as integer) as integer
 		Returns the index of the first character of the given line number, the first character is 0.
+		Returns -1 for nonexisting lines
 		
 		CharPosAtXY(X as integer, Y as integer) as integer
 		Returns the index of the character at the given X, Y coordinates.
@@ -364,6 +377,7 @@ Protected Module Info
 		
 		LineNumAtCharPos(offset as integer) as integer
 		Returns the line number where the character at index 'offset' is. The first line is line 0, line 0 is displayed as line 1 on screen.
+		Returns -1 for offsets past the last character
 		
 		Paste
 		Pastes whatever text is in the clipboard into the EditField.
@@ -378,11 +392,11 @@ Protected Module Info
 		Rehighlights the whole document.
 		
 		Remove(offset as integer, length as integer, updateCaret as boolean = true)
-		Removes 'length' characters from the editfield, starting at index 'offset'. updateCaret will move the the caret to the left by 'lenght' characters, if true.
+		Removes 'length' characters from the editfield, starting at index 'offset'. updateCaret will move the the caret to the left by 'length' characters, if true.
 		This method is used internally by the control, and externally by the undo mechanism, you shouldn't use it direclty, use instead selstart and seltext.
 		
 		Replace(offset as integer, length as integer, text as string)
-		Replaces 'lenght' characters with 'text' starting at index 'offset'.
+		Replaces 'length' characters with 'text' starting at index 'offset'.
 		This method is used internally by the control, and externally by the undo mechanism, you shouldn't use it direclty, use instead selstart and seltext.
 		
 		ResetUndo
@@ -494,7 +508,7 @@ Protected Module Info
 		Sets/Gets the horizontal scroll position, in pixels.
 		
 		SelLength as integer:
-		Lenght of the currently selected text
+		length of the currently selected text
 		
 		SelStart as integer:
 		Starting index of the current selection.
@@ -521,7 +535,7 @@ Protected Module Info
 		Returns the height of the text (line height)
 		
 		TextLength as Integer:
-		Returns the lenght of the text in the field.
+		Returns the length of the text in the field.
 		
 		TextSelectionColor as Color
 		Gets/sets the color to use for text selection. if set to &c000000 the OS default color is used.
@@ -647,6 +661,12 @@ Protected Module Info
 		        </highlightContext>
 		    </contexts>
 		</highlightDefinition>
+	#tag EndNote
+
+	#tag Note, Name = 5. Issues and Bugs
+		For latest list of issues, see the website:
+		
+		  http://code.google.com/p/custom-editfield/
 	#tag EndNote
 
 

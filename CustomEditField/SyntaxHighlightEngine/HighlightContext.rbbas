@@ -1,31 +1,36 @@
 #tag Class
 Protected Class HighlightContext
-	#tag Method, Flags = &h0
-		Sub addKeyword(keyword as string)
+	#tag Method, Flags = &h21
+		Private Sub addKeyword(keyword as string)
 		  if keyword="" then Return
 		  keywords.Append(keyword)
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
-		Sub addRegEx(newRegEx as string)
+	#tag Method, Flags = &h21
+		Private Sub addRegEx(newRegEx as string)
 		  if newRegEx="" then Return
 		  regexes.Append(newRegEx)
 		End Sub
 	#tag EndMethod
 
-	#tag Method, Flags = &h0
-		Sub addSubContext(entry as HighlightContext)
+	#tag Method, Flags = &h21
+		Private Sub addSubContext(entry as HighlightContext)
 		  if entry=nil then Return
 		  subContexts.Append(entry)
 		  
 		  subExpressionCount = subExpressionCount + 1
 		  subExpressionIndex.Append subExpressionCount
 		  
+		  // clear caches, just in case
+		  _subContextPattern = ""
+		  _contextPattern = ""
+		  
 		  // add pattern to search string
-		  if searchPattern <> "" then searchPattern = searchPattern + "|"
-		  searchPattern = searchPattern + "(" + entry.contextRegEx + ")"
-		  fixSubExpressionCount(entry.contextRegEx)
+		  if mSearchPattern <> "" then mSearchPattern = mSearchPattern + "|"
+		  mSearchPattern = mSearchPattern + "(" + entry.ContextSearchPattern + ")"
+		  fixSubExpressionCount(entry.ContextSearchPattern)
+		  
 		End Sub
 	#tag EndMethod
 
@@ -36,7 +41,6 @@ Protected Class HighlightContext
 		  
 		  dim xdoc as XmlDocument
 		  dim node, context as XmlNode
-		  dim tmpObj as Variant
 		  
 		  xdoc = parent.OwnerDocument
 		  context=parent.AppendChild(xdoc.CreateElement("highlightContext"))
@@ -45,13 +49,11 @@ Protected Class HighlightContext
 		  context.SetAttribute("name",Name)
 		  
 		  //HighlightColor
-		  tmpObj=HighlightColor
-		  context.SetAttribute("highlightColor","#"+Hex(tmpObj.IntegerValue))
+		  context.SetAttribute("highlightColor","#"+HighlightDefinition.ColorToText(HighlightColor))
 		  
 		  //BackgroundColor
 		  if HasBackgroundColor then
-		    tmpObj=BackgroundColor
-		    context.SetAttribute("backgroundColor","#"+Hex(tmpObj.IntegerValue))
+		    context.SetAttribute("backgroundColor","#"+HighlightDefinition.ColorToText(BackgroundColor))
 		  end if
 		  
 		  //bold
@@ -128,9 +130,9 @@ Protected Class HighlightContext
 	#tag Method, Flags = &h0
 		Sub Constructor(caseSensitive as boolean, createBlank as boolean = true)
 		  //init regex scanner
-		  scanner=new RegEx
-		  scanner.Options.DotMatchAll=true
-		  scanner.Options.CaseSensitive=caseSensitive
+		  mScanner=new RegEx
+		  mScanner.Options.DotMatchAll=true
+		  mScanner.Options.CaseSensitive=caseSensitive
 		  
 		  //if add whitespace tokenizer
 		  if createBlank then
@@ -143,45 +145,6 @@ Protected Class HighlightContext
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function contextRegEx() As string
-		  //return the regex pattern for this context
-		  
-		  //if there's a StartRegEx then the pattern is the StartRegEx, the same goes with the EntryRegEx
-		  if StartRegEx<>"" then Return StartRegEx
-		  if entryRegEx<>"" then Return entryRegEx
-		  
-		  //else, if there's a cached version of the regex, return it.
-		  if _contextRegEx<>"" then Return _contextRegEx
-		  
-		  //finally, build the pattern using the keywords, regexes and subcontexts (these are exclusive)
-		  //check for keywords
-		  dim keyword as String
-		  if UBound(keywords)>-1 then
-		    _contextRegEx="\b("
-		    for Each keyword in keywords
-		      _contextRegEx=_contextRegEx+keyword+"|"
-		    next
-		    _contextRegEx=Left(_contextRegEx,_contextRegEx.Len-1)+")\b"
-		    Return _contextRegEx
-		  end if
-		  
-		  //else, check for regexes
-		  dim aRegEx as String
-		  if UBound(regexes)>-1 then
-		    _contextRegEx="("
-		    for Each aRegEx in regexes
-		      _contextRegEx=_contextRegEx+aRegEx+"|"
-		    next
-		    _contextRegEx=Left(_contextRegEx,_contextRegEx.Len-1)+")"
-		    Return _contextRegEx
-		  end if
-		  
-		  _contextRegEx=subContextRegEx
-		  if _contextRegEx<>"" then Return _contextRegEx
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Function Contexts() As highlightcontext()
 		  dim current, tmp() as HighlightContext
 		  
@@ -190,6 +153,46 @@ Protected Class HighlightContext
 		  next
 		  
 		  Return tmp
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ContextSearchPattern() As String
+		  //return the regex pattern for this context
+		  
+		  //if there's a StartRegEx then the pattern is the StartRegEx, the same goes with the EntryRegEx
+		  if StartRegEx<>"" then Return StartRegEx
+		  if entryRegEx<>"" then Return entryRegEx
+		  
+		  //else, if there's a cached version of the regex, return it.
+		  if _contextPattern<>"" then Return _contextPattern
+		  
+		  //finally, build the pattern using the keywords, regexes and subcontexts (these are exclusive)
+		  //check for keywords
+		  dim keyword as String
+		  if UBound(keywords)>-1 then
+		    _contextPattern="\b("
+		    for Each keyword in keywords
+		      _contextPattern=_contextPattern+keyword+"|"
+		    next
+		    _contextPattern=Left(_contextPattern,_contextPattern.Len-1)+")\b"
+		    Return _contextPattern
+		  end if
+		  
+		  //else, check for regexes
+		  dim aRegEx as String
+		  if UBound(regexes)>-1 then
+		    _contextPattern="("
+		    for Each aRegEx in regexes
+		      _contextPattern=_contextPattern+aRegEx+"|"
+		    next
+		    _contextPattern=Left(_contextPattern,_contextPattern.Len-1)+")"
+		    Return _contextPattern
+		  end if
+		  
+		  // we seem never to get here
+		  _contextPattern = subContextPattern
+		  Return _contextPattern
 		End Function
 	#tag EndMethod
 
@@ -232,9 +235,8 @@ Protected Class HighlightContext
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function highlight(text as string, subExpression as string, position as integer, positionB as integer, scanner as regex, tokens() as textsegment, placeholders() as TextPlaceholder) As boolean
+		Function Highlight(text as string, subExpression as string, position as integer, positionB as integer, scanner as regex, tokens() as textsegment, placeholders() as TextPlaceholder) As boolean
 		  #pragma DisableBackgroundTasks
-		  #pragma DisableBoundsChecking
 		  #pragma DisableAutoWaitCursor
 		  
 		  //Highlight this context
@@ -242,12 +244,18 @@ Protected Class HighlightContext
 		  dim scanNextLine as Boolean = false
 		  
 		  //if there's a start and end regexes we need to find the EndRegEx
-		  if StartRegEx.trim<>"" and EndRegEx<>"" then
+		  if StartRegEx.trim<>"" and mEndRegEx<>nil then
 		    //find end...
-		    dim oldPattern as String = scanner.SearchPattern
-		    scanner.SearchPattern = EndRegEx
-		    match=scanner.Search(text, positionB + subExpression.Lenb) //fix, added .lenb to support utf correctly
-		    scanner.SearchPattern = oldPattern
+		    #if true
+		      dim oldPattern as String = scanner.SearchPattern
+		      scanner.SearchPattern = EndRegEx
+		      match = scanner.Search(text, positionB + subExpression.Lenb) //fix, added .lenb to support utf correctly
+		      scanner.SearchPattern = oldPattern
+		    #else
+		      // this would be a slightly faster version, but it doesn't work right, e.g. with Postgresql syntax. No idea why
+		      match = mEndRegex.Search(text, positionB + subExpression.Lenb) //fix, added .lenb to support utf correctly
+		      scanner.SearchStartPosition = mEndRegex.SearchStartPosition
+		    #endif
 		    
 		    //find the subExpression
 		    if match<>nil then
@@ -266,7 +274,7 @@ Protected Class HighlightContext
 		  dim startPos, startPosB, charPos, charPosB as Integer
 		  
 		  //scan subcontexts
-		  substring = searchPattern'subContextRegEx
+		  substring = mSearchPattern
 		  if substring = "" then
 		    //Highlight subExpression
 		    select case subExpression
@@ -285,8 +293,11 @@ Protected Class HighlightContext
 		      
 		    end select
 		  else
-		    self.scanner.SearchPattern = substring
-		    match=self.scanner.Search(subExpression)
+		    if mScanner.SearchPattern <> substring then
+		      if mScanner.SearchPattern <> "" then break // should get set only once!
+		      mScanner.SearchPattern = substring
+		    end if
+		    match=mScanner.Search(subExpression)
 		    
 		    while match<>nil
 		      substring=match.SubExpressionString(0)
@@ -317,16 +328,16 @@ Protected Class HighlightContext
 		      startPos = charPos
 		      startPosB = charPosB
 		      
-		      entry = subContexts(tknIndex)'findSubContextForMatch(substring, subExpression, start)
+		      entry = subContexts(tknIndex) 'findSubContextForMatch(substring, subExpression, start)
 		      
 		      //forward execution to subcontext...
 		      if entry<>nil and not entry.isPlaceholder then
-		        call entry.Highlight(subExpression, substring, position + startPos, positionB + startPosB, self.scanner, tokens, placeholders)
+		        call entry.Highlight(subExpression, substring, position + startPos, positionB + startPosB, mScanner, tokens, placeholders)
 		        #if DebugBuild
-		          dim asub as String = subExpression.leftb(self.scanner.SearchStartPosition)
+		          dim asub as String = subExpression.leftb(mScanner.SearchStartPosition)
 		        #endif
-		        startPos = subExpression.leftb(self.scanner.SearchStartPosition).len
-		        startPosB = self.scanner.SearchStartPosition
+		        startPos = subExpression.leftb(mScanner.SearchStartPosition).len
+		        startPosB = mScanner.SearchStartPosition
 		        
 		      elseIf entry <> nil and entry.isPlaceholder then
 		        dim label as String = match.SubExpressionString(match.SubExpressionCount - 1)
@@ -336,10 +347,10 @@ Protected Class HighlightContext
 		        tokens.Append(placeholder)
 		        placeholders.Append(placeholder)
 		        
-		        startPos = subExpression.leftb(self.scanner.SearchStartPosition).len
-		        startPosB = self.scanner.SearchStartPosition
+		        startPos = subExpression.leftb(mScanner.SearchStartPosition).len
+		        startPosB = mScanner.SearchStartPosition
 		      end if
-		      match=self.scanner.Search
+		      match=mScanner.Search
 		    wend
 		    
 		    if subExpression.len - startPos > 0 then _
@@ -381,7 +392,7 @@ Protected Class HighlightContext
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub loadFromXmlNode(node as xmlNode)
+		Sub LoadFromXmlNode(node as xmlNode)
 		  //load context out of an xml node
 		  dim tmpObj as Variant
 		  dim tmp as String
@@ -435,7 +446,7 @@ Protected Class HighlightContext
 		        addRegEx(subNode.Child(j).FirstChild.Value)
 		      next
 		    case "highlightContext"
-		      subContext=new HighlightContext(scanner.Options.CaseSensitive)
+		      subContext=new HighlightContext(mScanner.Options.CaseSensitive)
 		      subContext.loadFromXmlNode(subNode)
 		      addSubContext(subContext)
 		    end select
@@ -444,19 +455,24 @@ Protected Class HighlightContext
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
-		Private Function subContextRegEx() As string
-		  if _subContextRegEx<>"" then Return _subContextRegEx
-		  dim current as HighlightContext
+		Private Function subContextPattern() As String
+		  // this seems never to get called
 		  
-		  //get the regex for the subContexts
-		  if UBound(subContexts)>-1 then
-		    _subContextRegEx="("
-		    for Each current in subContexts
-		      _subContextRegEx=_subContextRegEx+current.contextRegEx+"|"
-		    next
-		    _subContextRegEx=Left(_subContextRegEx,_subContextRegEx.Len-1)+")"
-		    Return _subContextRegEx
+		  if _subContextPattern = "" then
+		    
+		    //get the regex for the subContexts
+		    if UBound(subContexts)>= 0 then
+		      dim s as String = "("
+		      for each current as HighlightContext in subContexts
+		        s = s + current.ContextSearchPattern+"|"
+		      next
+		      s = Left(s,s.Len-1)+")"
+		      _subContextPattern = s
+		    end if
+		    
 		  end if
+		  
+		  Return _subContextPattern
 		End Function
 	#tag EndMethod
 
@@ -540,12 +556,20 @@ Protected Class HighlightContext
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  return _endregex
+			  if mEndRegex <> nil then
+			    Return mEndRegex.SearchPattern
+			  end if
 			End Get
 		#tag EndGetter
 		#tag Setter
 			Set
-			  _endregex=value
+			  if value = "" then
+			    mEndRegex = nil
+			  else
+			    mEndRegex = new RegEx
+			    mEndRegex.Options.DotMatchAll = true
+			    mEndRegex.SearchPattern = value
+			  end if
 			End Set
 		#tag EndSetter
 		EndRegEx As string
@@ -554,15 +578,15 @@ Protected Class HighlightContext
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Return _entryRegEx
+			  Return mEntryRegex
 			End Get
 		#tag EndGetter
 		#tag Setter
 			Set
-			  _entryRegEx=value
+			  mEntryRegex = value
 			End Set
 		#tag EndSetter
-		EntryRegEx As string
+		EntryRegEx As String
 	#tag EndComputedProperty
 
 	#tag ComputedProperty, Flags = &h0
@@ -577,12 +601,12 @@ Protected Class HighlightContext
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Return _color
+			  Return mForeColor
 			End Get
 		#tag EndGetter
 		#tag Setter
 			Set
-			  _color=value
+			  mForeColor = value
 			End Set
 		#tag EndSetter
 		HighlightColor As color
@@ -619,6 +643,18 @@ Protected Class HighlightContext
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
+		Private mEndRegex As RegEx
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mEntryRegex As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mForeColor As color = &c000000
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
 		Private mHasbackgroundcolor As boolean
 	#tag EndProperty
 
@@ -628,6 +664,18 @@ Protected Class HighlightContext
 
 	#tag Property, Flags = &h21
 		Private mPlaceholderContextDef As HighlightContext
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mScanner As regex
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mSearchPattern As string
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mStartRegex As String
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -673,23 +721,15 @@ Protected Class HighlightContext
 		Private regexes() As string
 	#tag EndProperty
 
-	#tag Property, Flags = &h21
-		Private scanner As regex
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private searchPattern As string
-	#tag EndProperty
-
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
-			  Return _startregex
+			  Return mStartRegex
 			End Get
 		#tag EndGetter
 		#tag Setter
 			Set
-			  _startregex=value
+			  mStartRegex = value
 			End Set
 		#tag EndSetter
 		StartRegEx As string
@@ -722,19 +762,7 @@ Protected Class HighlightContext
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h21
-		Private _color As color = &c000000
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private _contextRegEx As string
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private _endRegex As string
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private _entryRegEx As string
+		Private _contextPattern As string
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -742,11 +770,7 @@ Protected Class HighlightContext
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
-		Private _startRegex As string
-	#tag EndProperty
-
-	#tag Property, Flags = &h21
-		Private _subContextRegEx As string
+		Private _subContextPattern As String
 	#tag EndProperty
 
 
@@ -772,7 +796,7 @@ Protected Class HighlightContext
 		#tag ViewProperty
 			Name="entryRegEx"
 			Group="Behavior"
-			Type="string"
+			Type="String"
 			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -792,7 +816,6 @@ Protected Class HighlightContext
 			Visible=true
 			Group="ID"
 			InitialValue="-2147483648"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -812,7 +835,6 @@ Protected Class HighlightContext
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -832,7 +854,6 @@ Protected Class HighlightContext
 			Name="Super"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -840,7 +861,6 @@ Protected Class HighlightContext
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty

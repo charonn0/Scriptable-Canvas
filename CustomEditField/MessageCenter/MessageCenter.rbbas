@@ -1,14 +1,28 @@
 #tag Module
 Protected Module MessageCenter
 	#tag Method, Flags = &h1
+		Protected Function isMessageInQueue(type as variant, matchInfoKey as Variant, matchInfoValue as Variant) As Boolean
+		  if queue <> nil then
+		    return queue.findMessageInQueue (type, matchInfoKey, matchInfoValue) <> nil
+		  end if
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
+		Protected Function messageInQueue(type as variant, matchInfoKey as Variant, matchInfoValue as Variant) As Message
+		  if queue <> nil then
+		    return queue.findMessageInQueue (type, matchInfoKey, matchInfoValue)
+		  end if
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h1
 		Protected Sub queueMessage(theMessage as Message)
 		  if messages = nil then return //no receivers
 		  if theMessage = nil then Return //???
 		  
 		  if queue = nil then
 		    queue = new MessageQueue
-		    queue.mode = Timer.ModeMultiple
-		    queue.Period = 50 '100
 		  end if
 		  
 		  queue.addMessage(theMessage)
@@ -51,7 +65,6 @@ Protected Module MessageCenter
 		  //no receivers for msg
 		  if not messages.hasKey(type) then return
 		  
-		  dim item as integer
 		  dim receivers as dictionary
 		  dim receiver as messageReceiver
 		  
@@ -135,7 +148,6 @@ Protected Module MessageCenter
 			Visible=true
 			Group="ID"
 			InitialValue="-2147483648"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -143,21 +155,18 @@ Protected Module MessageCenter
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -165,7 +174,6 @@ Protected Module MessageCenter
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 	#tag EndViewBehavior

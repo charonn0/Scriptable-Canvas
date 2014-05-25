@@ -69,7 +69,6 @@ Class GapBuffer
 		  #else
 		    Return new MemoryBlockStorageWide(size)
 		  #endif
-		  
 		End Function
 	#tag EndMethod
 
@@ -113,7 +112,7 @@ Class GapBuffer
 		  dim delta as Integer = index + Length
 		  
 		  //all text before gap?
-		  if delta < gapStart then 
+		  if delta < gapStart then
 		    Return buffer.StringValue(index, Length)
 		  end if
 		  
@@ -125,9 +124,7 @@ Class GapBuffer
 		  //text before and after gap
 		  dim result as IBufferStorage = getBufferStorage(length)
 		  result.Copy(buffer, index, 0, gapStart - index)
-		  'result.StringValue(0, gapStart - index) = buffer.StringValue(index, gapStart - index) //chunk before gap
 		  result.Copy(buffer, gapEnd, gapStart - index, delta - gapStart)
-		  'result.StringValue(gapStart - index, delta - gapStart) = buffer.StringValue(gapEnd, delta - gapStart) //chunk after gap
 		  
 		  Return result.StringValue(0, result.size)
 		End Function
@@ -166,10 +163,12 @@ Class GapBuffer
 		    //moving after current gap start
 		  else
 		    dim count as Integer = index - gapStart //items to move
-		    newbuffer.StringValue(gapStart, Count) = buffer.StringValue(gapEnd, Count) //move items
-		    
-		    gapStart = gapStart + Count
-		    gapEnd = gapEnd + Count
+		    if count > 0 then
+		      newbuffer.StringValue(gapStart, Count) = buffer.StringValue(gapEnd, Count) //move items
+		      
+		      gapStart = gapStart + Count
+		      gapEnd = gapEnd + Count
+		    end if
 		  end if
 		End Sub
 	#tag EndMethod
@@ -225,8 +224,6 @@ Class GapBuffer
 		
 		more info here:
 		http://en.wikipedia.org/wiki/Gap_buffer
-		
-		
 	#tag EndNote
 
 

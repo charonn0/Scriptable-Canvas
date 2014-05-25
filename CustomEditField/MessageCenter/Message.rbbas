@@ -2,7 +2,7 @@
 Protected Class Message
 Inherits Dictionary
 	#tag Method, Flags = &h0
-		Sub addInfo(key as variant, info as variant)
+		Sub AddInfo(key as variant, info as variant)
 		  //Add info to the message in a key/data fashion
 		  value(key)=info
 		  

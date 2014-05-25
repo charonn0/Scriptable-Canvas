@@ -14,8 +14,20 @@ Protected Class DataRange
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function inRange(offset as integer) As boolean
-		  Return offset >= self.offset and offset < self.offset + self.length //changed to  < instead of <= per Thomas Tempelmann's suggestion.
+		Function InRange(offset as integer) As Boolean
+		  Return offset >= moffset and offset < moffset + mLength
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function OverlapsOrTouchesRange(other as DataRange) As Boolean
+		  return self.offset <= other.endOffset and other.offset <= self.endOffset
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function OverlapsRange(other as DataRange) As Boolean
+		  return self.offset < other.endOffset and other.offset < self.endOffset
 		End Function
 	#tag EndMethod
 
@@ -24,6 +36,15 @@ Protected Class DataRange
 		Event LengthChanged()
 	#tag EndHook
 
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return "["+Str(moffset)+","+Str(endOffset)+"["
+			End Get
+		#tag EndGetter
+		DebugDescription As String
+	#tag EndComputedProperty
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
@@ -47,7 +68,7 @@ Protected Class DataRange
 			  LengthChanged
 			End Set
 		#tag EndSetter
-		length As Integer
+		Length As Integer
 	#tag EndComputedProperty
 
 	#tag Property, Flags = &h21
@@ -70,11 +91,17 @@ Protected Class DataRange
 			  
 			End Set
 		#tag EndSetter
-		offset As Integer
+		Offset As Integer
 	#tag EndComputedProperty
 
 
 	#tag ViewBehavior
+		#tag ViewProperty
+			Name="DebugDescription"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
 		#tag ViewProperty
 			Name="EndOffset"
 			Group="Behavior"

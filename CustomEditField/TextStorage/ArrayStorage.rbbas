@@ -89,7 +89,7 @@ Implements IBufferStorage
 		  dim doubleByte as Boolean = encoding <> nil and encoding.Equals(encodings.UTF16) //fix to handle UTF-16
 		  
 		  dim tmp as MemoryBlock
-		  dim chars() as String 
+		  dim chars() as String
 		  
 		  //split data into a tmp array
 		  if doubleByte then
@@ -143,7 +143,6 @@ Implements IBufferStorage
 
 	#tag Note, Name = Info
 		Text storage as an array of strings.
-		
 	#tag EndNote
 
 

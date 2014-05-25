@@ -291,6 +291,7 @@ Begin Window MainWindow
          Selectable      =   False
          TabIndex        =   0
          TabPanelIndex   =   4
+         TabStop         =   True
          Text            =   "Not checked"
          TextAlign       =   0
          TextColor       =   &h000000
@@ -618,6 +619,7 @@ Begin Window MainWindow
       Selectable      =   False
       TabIndex        =   11
       TabPanelIndex   =   0
+      TabStop         =   True
       Text            =   "Not Running"
       TextAlign       =   0
       TextColor       =   &h000000
@@ -631,6 +633,7 @@ Begin Window MainWindow
       Width           =   676
    End
    Begin RbScript Script
+      Enabled         =   True
       EncodingFont    =   ""
       Height          =   32
       Index           =   -2147483648
@@ -639,8 +642,11 @@ Begin Window MainWindow
       LockedInPosition=   False
       Scope           =   0
       Source          =   ""
+      TabIndex        =   5
       TabPanelIndex   =   0
+      TabStop         =   True
       Top             =   31
+      Visible         =   True
       Width           =   32
    End
 End

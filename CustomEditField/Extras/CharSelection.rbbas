@@ -105,6 +105,13 @@ Inherits DataRange
 
 	#tag ViewBehavior
 		#tag ViewProperty
+			Name="DebugDescription"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+			InheritedFrom="DataRange"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="EndLine"
 			Group="Behavior"
 			InitialValue="0"

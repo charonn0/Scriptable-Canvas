@@ -1,12 +1,13 @@
 #tag Class
 Protected Class CustomEditFieldPrinter
 	#tag Method, Flags = &h0
-		Sub Constructor(g as graphics, textStorage as gapBuffer, lines as linemanager, defaultColor as color, displayInvisible as boolean)
+		Sub Constructor(g as graphics, textStorage as gapBuffer, lines as linemanager, defaultColor as color, displayInvisible as boolean, indentVisually as Boolean)
 		  self.g = g
 		  self.TextStorage = TextStorage
 		  self.lines = lines
 		  self.defaultColor = defaultColor
 		  self.displayInvisible = displayInvisible
+		  self.indentVisually = indentVisually
 		End Sub
 	#tag EndMethod
 
@@ -39,7 +40,7 @@ Protected Class CustomEditFieldPrinter
 		    currentLine = lines.getLine(i)
 		    if currentLine = nil then Continue for
 		    
-		    linesUsed = currentLine.PrinterPaint(TextStorage, g, sx + lineNumOffset, sy, width - lineNumOffset, defaultColor, displayInvisible, wrap)
+		    linesUsed = currentLine.PrinterPaint(TextStorage, g, sx + lineNumOffset, sy, width - lineNumOffset, defaultColor, displayInvisible, wrap, self.indentVisually)
 		    
 		    if lineNumbers then
 		      g.ForeColor = &c888888
@@ -69,6 +70,10 @@ Protected Class CustomEditFieldPrinter
 
 	#tag Property, Flags = &h1
 		Protected g As graphics
+	#tag EndProperty
+
+	#tag Property, Flags = &h1
+		Protected indentVisually As Boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h1

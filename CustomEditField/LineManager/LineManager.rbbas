@@ -50,6 +50,8 @@ Class LineManager
 		  longestLineLength = 0
 		  lineEnding = chr(13)
 		  currentInvisibleLines = -1
+		  mFirstLineForIndentation = 0
+		  mLastLineForIndentation = -1
 		End Sub
 	#tag EndMethod
 
@@ -65,7 +67,6 @@ Class LineManager
 	#tag Method, Flags = &h0
 		Sub Constructor(TextStorage as gapBuffer, TabWidth as integer)
 		  //create generic eol segment
-		  EOLSegment = new TextSegment(0,0)
 		  self.TextStorage = TextStorage
 		  
 		  //no need to find the longest line yet
@@ -75,16 +76,12 @@ Class LineManager
 		  lineEnding = chr(13)
 		  
 		  self.TabWidth = TabWidth
-		  
-		  EOLScanner = new RegEx
-		  //patterns are chr(13)+chr(10) | chr(13) | chr(10) which are all possible line endings
-		  EOLScanner.SearchPattern = "\x0A|(\x0D\x0A?)"
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h1
-		Protected Function createLines(lineInsertPoint as integer, offset as integer, length as integer) As integer
-		  'Modified version by Seth Verrinder
+		Protected Function createLines(lineInsertPoint as integer, offset as integer, length as integer, indent as Integer, lineContIdx as Integer, markDirty as Boolean = false) As integer
+		  // This function creates TextLine objects from the textbuffer
 		  
 		  #if not DebugBuild
 		    #pragma DisableBackgroundTasks
@@ -100,10 +97,18 @@ Class LineManager
 		  
 		  FindLineLengths( text, ariLineLen, ariLineDelimeter )
 		  
+		  dim lastDirtyLine as TextLine, wasLastDirtyBefore as Boolean
+		  
 		  for i as integer = 0 to ariLineLen.Ubound - 1
 		    dim segment as TextLine
-		    segment = new TextLine(offset+startSearchIndex, ariLineLen(i), ariLineDelimeter(i), TabWidth)
+		    segment = new TextLine(offset+startSearchIndex, ariLineLen(i), ariLineDelimeter(i), TabWidth, indent, lineContIdx)
 		    startSearchIndex = startSearchIndex + ariLineLen(i)
+		    
+		    if markDirty then
+		      lastDirtyLine = segment
+		      wasLastDirtyBefore = lastDirtyLine.isDirty
+		      lastDirtyLine.isDirty = true
+		    end if
 		    
 		    //append/insert?
 		    if lineInsertPoint + insertedLines > UBound(lines) then
@@ -118,139 +123,25 @@ Class LineManager
 		  //trailing text
 		  if startSearchIndex <= text.len then
 		    if lineInsertPoint + insertedLines > UBound(lines) then
-		      dim line as TextLine = new TextLine(offset + startSearchIndex, text.len - startSearchIndex, 0, TabWidth)
+		      dim line as TextLine = new TextLine(offset + startSearchIndex, text.len - startSearchIndex, 0, TabWidth, indent, lineContIdx)
+		      if markDirty then
+		        lastDirtyLine = line
+		        wasLastDirtyBefore = lastDirtyLine.isDirty
+		        lastDirtyLine.isDirty = true
+		      end if
 		      appendLine(line)
 		      insertedLines = insertedLines + 1
 		    end if
 		  end if
+		  
+		  if lastDirtyLine <> nil then
+		    // This deals with a special case: If we're called by CustomEditField.private_replace(), the first line gets deleted and then added here
+		    // again. But if the insertion was a new line with a CR at the end, then this deleted/added line is only shifted down, but not actually
+		    // changed. This code tries to deal with that by not marking it dirty.
+		    lastDirtyLine.isDirty = wasLastDirtyBefore
+		  end
 		  
 		  NotifyLineChangedRange(lineInsertPoint, insertedLines)
-		  
-		  Return insertedLines
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h1
-		Protected Function createLinesOriginal(text as string, lineInsertPoint as integer, offset as integer) As integer
-		  #if not DebugBuild
-		    #pragma DisableBackgroundTasks
-		    #pragma DisableBoundsChecking
-		    #pragma DisableAutoWaitCursor
-		  #endif
-		  
-		  dim startSearchIndex as Integer
-		  dim insertedLines as Integer
-		  
-		  if text.Encoding <> nil and text.Encoding.Equals(Encodings.UTF16) then
-		    text = text.ConvertEncoding(encodings.UTF8)
-		  end if
-		  
-		  //find next EOL in text
-		  dim marker as TextSegment = nextEOL(text)
-		  
-		  //if found
-		  While marker <> nil
-		    //create a text line with it
-		    dim segment as TextLine
-		    segment = new TextLine(offset + startSearchIndex, (marker.offset + marker.length) - startSearchIndex, marker.length, TabWidth)
-		    
-		    #if DebugBuild
-		      dim tmp as String = TextStorage.getText(segment.offset, segment.length)
-		    #endif
-		    
-		    //append/insert?
-		    if lineInsertPoint + insertedLines > UBound(lines) then
-		      AppendLine(segment)
-		    else
-		      insertLine(lineInsertPoint + insertedLines, segment)
-		    end if
-		    
-		    //look for next eol
-		    insertedLines = insertedLines + 1
-		    startSearchIndex = marker.offset + marker.length
-		    marker = nextEOL(text, false)
-		  Wend
-		  
-		  //trailing text
-		  if startSearchIndex <= text.len then
-		    if lineInsertPoint + insertedLines > UBound(lines) then
-		      dim line as TextLine = new TextLine(offset + startSearchIndex, text.len - startSearchIndex, 0, TabWidth)
-		      appendLine(line)
-		      insertedLines = insertedLines + 1
-		    end if
-		  end if
-		  
-		  Return insertedLines
-		End Function
-	#tag EndMethod
-
-	#tag Method, Flags = &h1
-		Protected Function createLinesScan(lineInsertPoint as integer, offset as integer, length as integer) As integer
-		  #if not DebugBuild
-		    #pragma DisableBackgroundTasks
-		    #pragma DisableBoundsChecking
-		    #pragma DisableAutoWaitCursor
-		  #endif
-		  
-		  dim startOffset as Integer = offset
-		  dim currentOffset as Integer = offset
-		  dim endOffset as Integer = offset + length
-		  
-		  dim insertedLines as Integer
-		  dim currentLine as TextLine
-		  
-		  dim nextByte as Integer
-		  //dim nextChar as String
-		  
-		  while currentOffset < endOffset
-		    //extract next char...
-		    EOLSegment.offset = -1
-		    EOLSegment.length = 1
-		    nextByte = TextStorage.getByteAt(currentOffset)
-		    //nextChar = TextStorage.getCharAt(currentOffset)
-		    
-		    //check if is an eol... 13, 13+10, 10
-		    if nextByte = 13 then
-		      EOLSegment.offset = currentOffset
-		      lineEnding = chr(13)
-		      
-		      if currentOffset + 1 < endOffset and TextStorage.getByteAt(currentOffset + 1) = 10 then
-		        EOLSegment.length = 2
-		        lineEnding = lineEnding + chr(10)
-		      end if
-		      
-		    elseif nextByte = 10 then
-		      EOLSegment.offset = currentOffset
-		      lineEnding = chr(10)
-		    end if
-		    
-		    //create line
-		    if EOLSegment.offset >= 0 then
-		      currentLine = new TextLine(startOffset, (EOLSegment.offset + EOLSegment.length) - startOffset, EOLSegment.length, TabWidth)
-		      startOffset = EOLSegment.offset + EOLSegment.length
-		      
-		      //append/insert?
-		      if lineInsertPoint + insertedLines > UBound(lines) then
-		        AppendLine(currentLine)
-		      else
-		        insertLine(lineInsertPoint + insertedLines, currentLine)
-		      end if
-		      
-		      insertedLines = insertedLines + 1
-		    end if
-		    
-		    currentOffset = currentOffset + EOLSegment.length
-		  wend
-		  //loop until currentOffset >= endOffset
-		  
-		  if startOffset <= endOffset then
-		    //trailing text...
-		    if lineInsertPoint + insertedLines > UBound(lines) then
-		      currentLine = new TextLine(startOffset, endOffset - startOffset, 0, TabWidth)
-		      appendLine(currentLine)
-		      insertedLines = insertedLines + 1
-		    end if
-		  end if
 		  
 		  Return insertedLines
 		End Function
@@ -274,8 +165,11 @@ Class LineManager
 		  dim currentEncoding as TextEncoding = sText.Encoding
 		  if currentEncoding = nil then currentEncoding = Encodings.ASCII
 		  
-		  //get the byte length for an EOL char... it could be > 1
+		  //get the byte length for an EOL char... it could be > 1, e.g. in UTF-16
 		  dim EOLlen as Integer = currentEncoding.Chr(13).LenB
+		  
+		  dim prevLineEnding as String = lineEnding
+		  lineEnding = "" // will be set below, by the first line delimiter that's encountered
 		  
 		  for each sLine as string in ars
 		    dim iLineLen as integer = sLine.Len
@@ -290,10 +184,12 @@ Class LineManager
 		        iLineLen = iLineLen + 2
 		        iOffsetB = iOffsetB + EOLlen
 		        ariDelimeterLen.Append( 2 )
+		        if lineEnding = "" then lineEnding = Chr(13)+Chr(10)
 		        
 		      else //mac
 		        iLineLen = iLineLen + 1
 		        ariDelimeterLen.Append( 1 )
+		        if lineEnding = "" then lineEnding = Chr(13)
 		        
 		      end if
 		      
@@ -301,13 +197,14 @@ Class LineManager
 		      iLineLen = iLineLen + 1
 		      iOffsetB = iOffsetB + EOLlen
 		      ariDelimeterLen.Append( 1 )
+		      if lineEnding = "" then lineEnding = Chr(10)
 		      
 		    elseif c = 0 then
 		      //ReplaceLineEndings( sText, EndOfLine.UNIX ) is actually adding extra blank lines with utf16
 		      //there should be only ONE 0-len delimiter per createLines operation, the last one.
 		      ariDelimeterLen.Append( 0 )
 		      ariLineLen.Append( iLineLen )
-		      Return
+		      Exit
 		      
 		    else
 		      Continue
@@ -315,6 +212,20 @@ Class LineManager
 		    
 		    ariLineLen.Append( iLineLen )
 		  next
+		  
+		  if lineEnding = "" then
+		    // if text had no line delimiters we'll use the OS default
+		    lineEnding = prevLineEnding
+		    if lineEnding = "" then
+		      #if TargetWin32
+		        lineEnding = EndOfLine.Windows
+		      #else
+		        // Mac nowadays uses Unix, not the old Chr(13), so does Linux
+		        lineEnding = EndOfLine.Unix
+		      #endif
+		    end if
+		  end if
+		  
 		End Sub
 	#tag EndMethod
 
@@ -384,9 +295,19 @@ Class LineManager
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function getAttributesOfLinesInRange(offset as Integer, length as Integer) As TextLineAttributes()
+		  dim attrs() as TextLineAttributes
+		  for each line as TextLine in linesInRange (offset, length)
+		    attrs.Append line.getAttributes
+		  next
+		  return attrs
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Function getLine(index as integer) As TextLine
 		  //get a given line
-		  if index < 0 or index > Count - 1 then Return nil
+		  if index < 0 or index >= Count then Return nil
 		  
 		  Return lines(index)
 		End Function
@@ -504,8 +425,15 @@ Class LineManager
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub insert(offset as integer, text as string)
-		  replace(offset, 0, text)
+		Sub IndentationFinished()
+		  mFirstLineForIndentation = lines.Ubound+1
+		  mLastLineForIndentation = -1
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub insert(offset as integer, text as string, alwaysMarkDirty as Boolean)
+		  replace(offset, 0, text, alwaysMarkDirty)
 		End Sub
 	#tag EndMethod
 
@@ -524,6 +452,57 @@ Class LineManager
 		    NotifyMaxLineLengthChanged(longestLineIndex)
 		  end if
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub LineIsIndented(lineIdx as Integer)
+		  if lineIdx = mFirstLineForIndentation then
+		    mFirstLineForIndentation = lineIdx + 1
+		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub LineNeedsIndentation(lineIdx as Integer)
+		  dim line as TextLine = getLine(lineIdx)
+		  if line <> nil then
+		    if lineIdx < mFirstLineForIndentation then
+		      mFirstLineForIndentation = lineIdx
+		    end if
+		    if lineIdx > mLastLineForIndentation then
+		      mLastLineForIndentation = lineIdx
+		    end if
+		    #if DebugBuild and EditFieldGlobals.DebugIndentation
+		      'if line.indent <> -1 then
+		      System.DebugLog "InvalidateLine "+str(lineIdx)+", now: "+Str(mFirstLineForIndentation)+" to "+Str(mLastLineForIndentation)
+		      'end if
+		    #endif
+		    line.indent = -1
+		  end if
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function linesInRange(offset as Integer, length as Integer) As TextLine()
+		  dim result() as TextLine
+		  
+		  dim idx as Integer = getLineNumberForOffset(offset, length)
+		  if idx >= 0 and idx <= lines.Ubound then
+		    dim line as TextLine = lines(idx)
+		    length = length + (offset - line.Offset) // so that we cover the range from the start of the line
+		    while length >= 0
+		      result.Append line
+		      length = length - line.Length
+		      idx = idx + 1
+		      if idx > lines.Ubound then
+		        exit while
+		      end if
+		      line = lines(idx)
+		    wend
+		  end if
+		  
+		  return result
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -586,35 +565,6 @@ Class LineManager
 		End Function
 	#tag EndMethod
 
-	#tag Method, Flags = &h1
-		Protected Function nextEOL(text as string, fromStart as boolean = true) As Textsegment
-		  //finds next eol
-		  #if not DebugBuild
-		    #pragma DisableBackgroundTasks
-		    #pragma DisableBoundsChecking
-		    #pragma DisableAutoWaitCursor
-		  #endif
-		  
-		  dim match as RegExMatch
-		  if fromStart then
-		    match = EOLScanner.Search(text)
-		  else
-		    match = EOLScanner.Search
-		  end if
-		  
-		  if match = nil then Return nil
-		  
-		  //save whatever line ending this text uses
-		  lineEnding = match.SubExpressionString(0)
-		  
-		  //and set the generic segment
-		  EOLSegment.offset = text.LeftB(match.SubExpressionStartB(0)).len
-		  EOLSegment.length = match.SubExpressionString(0).Len
-		  
-		  Return EOLSegment
-		End Function
-	#tag EndMethod
-
 	#tag Method, Flags = &h0
 		Function nextVisibleLine(fromLine as integer) As integer
 		  #if not DebugBuild
@@ -634,14 +584,16 @@ Class LineManager
 
 	#tag Method, Flags = &h1
 		Protected Sub NotifyLineChangedRange(startIndex as integer, length as Integer)
-		  //notify changes
+		  if length <= 0 then return
+		  
+		  #if DebugBuild
+		    'System.DebugLog "NotifyLineChangedRange("+Str(startIndex,"-#")+", "+Str(length,"-#")+")"
+		  #endif
+		  
 		  dim msg as new Message(self, self)
 		  msg.addInfo(1, LineChangedMsg)
 		  msg.addInfo(2, startIndex)
 		  msg.addInfo(3, length)
-		  
-		  //Alex  8/22/09 the line itself is no longer needed.
-		  //msg.addInfo(3, line)
 		  
 		  MessageCenter.sendMessage(msg)
 		End Sub
@@ -687,7 +639,7 @@ Class LineManager
 		  end if
 		  
 		  dim depth as integer
-		  dim idx, match, lastLine as Integer
+		  dim idx, match as Integer
 		  
 		  match = -1
 		  for idx = forLine - 1 DownTo 0
@@ -735,7 +687,7 @@ Class LineManager
 
 	#tag Method, Flags = &h0
 		Sub remove(offset as integer, length as integer)
-		  replace(offset, length, "")
+		  replace(offset, length, "", true)
 		End Sub
 	#tag EndMethod
 
@@ -782,7 +734,7 @@ Class LineManager
 		  end if
 		  
 		  // harder case: copy the data down, and THEN redim
-		  Dim dest, src, maxsrc As Integer
+		  Dim dest, src As Integer
 		  dest = fromIndex
 		  for src = toIndex to ub
 		    arr(dest) = arr(src)
@@ -806,7 +758,6 @@ Class LineManager
 		  dim tmp as new Dictionary
 		  
 		  dim line as TextLine
-		  dim key as String
 		  for i as integer = fromIndex to toIndex
 		    line = getLine(i)
 		    if line = nil or line.LineSymbols = nil or line.LineSymbols.Count = 0 then Continue for
@@ -833,8 +784,12 @@ Class LineManager
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub replace(offset as integer, length as integer, text as string)
-		  //replaces a chunk of text with "text" and length "length" at pos offset
+		Sub replace(offset as integer, length as integer, text as string, alwaysMarkDirty as Boolean)
+		  // Replaces a chunk of text with "text" and length "length" at pos offset
+		  //
+		  // This method doesn't actually store the text (that's handled by TextStorage.replace),
+		  // but only needs to read its length.
+		  
 		  #if not DebugBuild
 		    #pragma DisableBackgroundTasks
 		    #pragma DisableBoundsChecking
@@ -843,18 +798,25 @@ Class LineManager
 		  
 		  dim lineNumber as Integer = getLineNumberForOffset(offset, length)
 		  
+		  if alwaysMarkDirty then
+		    // mark line for needing indendation
+		    LineNeedsIndentation lineNumber
+		  end if
+		  
 		  //save original index as it may change
 		  dim originalLine as Integer = lineNumber
-		  
-		  dim line as TextLine
 		  
 		  //old highlight context, in case the modified line has one
 		  dim oldContext as HighlightContext
 		  
-		  dim lineCount as Integer = count
+		  dim lineCount as Integer = self.Count
 		  
-		  line = lines(lineNumber)
-		  if length > 0 then //merge affected lines...
+		  dim line as TextLine
+		  if lineNumber <= lines.Ubound then
+		    line = lines(lineNumber)
+		  end if
+		  
+		  if length > 0 and line <> nil then //merge affected lines...
 		    dim numberOfAffectedLines as Integer = getNumberOfAffectedLines(lineNumber, offset, length)
 		    dim endLine as TextLine = lines(lineNumber + numberOfAffectedLines - 1)
 		    
@@ -870,9 +832,9 @@ Class LineManager
 		    removeLineSlice(lines, lineNumber + 1, lineNumber + numberOfAffectedLines)
 		  end if
 		  
-		  //dim textToProcess as String
-		  
-		  if length = 0 and text.len = 1 and text <> lineEnding  then //simple keystroke
+		  if line = nil then
+		    // ignore
+		  elseif length = 0 and text.len = 1 and text <> lineEnding then //simple keystroke
 		    RemoveLineSymbols(lineNumber, lineNumber)
 		    line.length = line.length + 1 //make line longer by one char
 		    fixOffsets(lineNumber + 1, line.offset + line.length) //fix the offsets
@@ -907,13 +869,11 @@ Class LineManager
 		    //Line now contains a merged line composing all affected lines.
 		    dim delta as Integer = line.length - length + text.len
 		    
-		    //extract the affected text
-		    //textToProcess = TextStorage.getText(line.offset, delta)
-		    
 		    //remove merged line, and start parsing/inserting.
-		    removeLine(lineNumber)'originalLine)
-		    
-		    lineNumber = lineNumber + createLines(lineNumber, line.offset, delta)'createLines(textToProcess, lineNumber, line.offset)
+		    removeLine(lineNumber)
+		    dim insertedLines as Integer = createLines(lineNumber, line.offset, delta, line.indent, line.isContinuedFromLine, alwaysMarkDirty)
+		    lines(lineNumber).AdoptLine line
+		    lineNumber = lineNumber + insertedLines
 		    
 		    //fix offsets starting from the last modified line.
 		    line = lines(max(lineNumber - 1,0))
@@ -923,23 +883,27 @@ Class LineManager
 		    if oldContext <> nil then
 		      lines(originalLine).Context = oldContext
 		      NotifyLineChangedRange(originalLine, 1)
-		    end if
+		    end
+		    
 		  end if
 		  
-		  //rescan leghts if necessary
-		  if needsLongestRescan then rescanLenghts
+		  //rescan lengths if necessary
+		  if needsLongestRescan then rescanLengths
 		  
 		  //fire LineChangedDelegate if any
-		  if lineCount = count then Return
-		  NotifyLineCountChanged
+		  if lineCount <> count then
+		    NotifyLineCountChanged
+		  end if
 		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub rescanLenghts()
+		Sub rescanLengths()
 		  //find the longest line.
 		  longestLineIndex = -1
 		  longestLineLength = -1
+		  
+		  #pragma DisableBackgroundTasks
 		  
 		  dim line as TextLine
 		  dim idx as Integer
@@ -971,9 +935,19 @@ Class LineManager
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub setAttributesOfLinesInRange(offset as Integer, length as Integer, attrs() as TextLineAttributes)
+		  dim lineCount as Integer
+		  for each line as TextLine in linesInRange (offset, length)
+		    line.setAttributes attrs(lineCount)
+		    lineCount = lineCount + 1
+		  next
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub setText(length as Integer)
 		  Clear
-		  call createLines(0, 0, length)
+		  call createLines(0, 0, length, 0, -1)
 		  NotifyLineCountChanged
 		  NotifyMaxLineLengthChanged(longestLineIndex)
 		End Sub
@@ -990,9 +964,8 @@ Class LineManager
 		  end if
 		  
 		  //now, find the range...
-		  dim depth as integer
 		  dim testLine as TextLine
-		  dim idx, match, lastLine as Integer
+		  dim idx, match as Integer
 		  
 		  match = -1
 		  if line.isBlockStart then
@@ -1088,13 +1061,14 @@ Class LineManager
 		Protected currentInvisibleLines As Integer = -1
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected EOLScanner As regex
-	#tag EndProperty
-
-	#tag Property, Flags = &h1
-		Protected EOLSegment As Textsegment
-	#tag EndProperty
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mFirstLineForIndentation
+			End Get
+		#tag EndGetter
+		FirstLineForIndentation As Integer
+	#tag EndComputedProperty
 
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
@@ -1108,6 +1082,15 @@ Class LineManager
 		invisibleLines As Integer
 	#tag EndComputedProperty
 
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mLastLineForIndentation
+			End Get
+		#tag EndGetter
+		LastLineForIndentation As Integer
+	#tag EndComputedProperty
+
 	#tag Property, Flags = &h0
 		lineEnding As string
 	#tag EndProperty
@@ -1116,12 +1099,24 @@ Class LineManager
 		Protected lines() As TextLine
 	#tag EndProperty
 
+	#tag Property, Flags = &h0
+		linesLock As CriticalSection
+	#tag EndProperty
+
 	#tag Property, Flags = &h1
 		Protected longestLineIndex As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
 		Protected longestLineLength As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mFirstLineForIndentation As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mLastLineForIndentation As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -1198,11 +1193,15 @@ Class LineManager
 			Type="Integer"
 		#tag EndViewProperty
 		#tag ViewProperty
+			Name="FirstLineForIndentation"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="Index"
 			Visible=true
 			Group="ID"
 			InitialValue="-2147483648"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -1212,11 +1211,15 @@ Class LineManager
 			Type="Integer"
 		#tag EndViewProperty
 		#tag ViewProperty
+			Name="LastLineForIndentation"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="Left"
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -1229,14 +1232,12 @@ Class LineManager
 			Name="Name"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -1250,7 +1251,6 @@ Class LineManager
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 	#tag EndViewBehavior

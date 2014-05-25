@@ -57,42 +57,55 @@ Implements IBufferStorage
 
 	#tag Method, Flags = &h0
 		Function StringValue(index as integer, length as integer) As string
-		  index = index * BytesPerChar
-		  length = length * BytesPerChar
-		  
 		  // Part of the IBufferStorage interface.
 		  if length = 0 then Return ""
-		  if index >= Size * BytesPerChar then Return ""
+		  if index >= Size then Return ""
+		  
+		  index = index * BytesPerChar
+		  length = length * BytesPerChar
 		  
 		  //trailing 2 - 4 bytes needed to hold a null ending.
 		  dim tmp as new MemoryBlock(length + BytesPerChar)
 		  tmp.StringValue(0, length) = Storage.StringValue(index, min(length, storage.Size - index))
 		  
-		  Return tmp.WString(0)
+		  #if TargetLinux
+		    return tmp.WString(0) // this uses UTF-16, no BOM
+		  #else
+		    return tmp.WString(0)
+		  #endif
 		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
 		Sub StringValue(index as integer, length as integer, assigns value as string)
-		  index = index * BytesPerChar
-		  length = length * BytesPerChar
-		  
 		  // Part of the IBufferStorage interface.
 		  if length = 0 then Return
 		  
+		  index = index * BytesPerChar
+		  length = length * BytesPerChar
+		  
 		  //trailing 4 bytes needed to hold a null ending.
-		  dim tmp as new MemoryBlock(value.LenB * BytesPerChar + BytesPerChar) //len?
+		  dim tmp as new MemoryBlock(value.LenB * BytesPerChar + 2*BytesPerChar) // Linux adds a BOM at the start
 		  tmp.WString(0) = value
 		  
 		  //copy to local storage, without null terminator char.
-		  Storage.StringValue(index, length) = tmp.StringValue(0, length)
+		  #if TargetLinux
+		    dim n as UInt32 = tmp.UInt32Value(0)
+		    if n = &hFFFE or n = &hFEFF then
+		      // remove the BOM
+		      Storage.StringValue(index, length) = tmp.StringValue(BytesPerChar, length)
+		    else
+		      Storage.StringValue(index, length) = tmp.StringValue(0, length)
+		    end
+		  #else
+		    Storage.StringValue(index, length) = tmp.StringValue(0, length)
+		  #endif
 		End Sub
 	#tag EndMethod
 
 
 	#tag Note, Name = Info
 		Text storage as a MemoryBlock
-		
 	#tag EndNote
 
 

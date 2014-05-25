@@ -50,22 +50,21 @@ Inherits DataRange
 		  self.length = length
 		  self.width = -1
 		  
-		  
 		  Return tmp
 		End Function
 	#tag EndMethod
 
 
-	#tag Property, Flags = &h1
-		Protected backgroundColor As color
+	#tag Property, Flags = &h0
+		BackgroundColor As color
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		bold As boolean
+		Bold As boolean
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected hasBackgroundColor As boolean
+	#tag Property, Flags = &h0
+		HasBackgroundColor As boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -73,7 +72,7 @@ Inherits DataRange
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		italic As boolean
+		Italic As boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h1
@@ -84,8 +83,8 @@ Inherits DataRange
 		Protected lastSize As integer
 	#tag EndProperty
 
-	#tag Property, Flags = &h1
-		Protected textColor As color
+	#tag Property, Flags = &h0
+		TextColor As color
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -93,11 +92,11 @@ Inherits DataRange
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		underline As boolean
+		Underline As boolean
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		width As double
+		Width As double
 	#tag EndProperty
 
 
@@ -119,10 +118,23 @@ Inherits DataRange
 
 	#tag ViewBehavior
 		#tag ViewProperty
+			Name="BackgroundColor"
+			Group="Behavior"
+			InitialValue="&h000000"
+			Type="color"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="bold"
 			Group="Behavior"
 			InitialValue="0"
 			Type="boolean"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="DebugDescription"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+			InheritedFrom="DataRange"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="EndOffset"
@@ -130,6 +142,11 @@ Inherits DataRange
 			InitialValue="0"
 			Type="Integer"
 			InheritedFrom="DataRange"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="HasBackgroundColor"
+			Group="Behavior"
+			Type="boolean"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ID"
@@ -182,6 +199,12 @@ Inherits DataRange
 			Visible=true
 			Group="ID"
 			InheritedFrom="Object"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="TextColor"
+			Group="Behavior"
+			InitialValue="&h000000"
+			Type="color"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"

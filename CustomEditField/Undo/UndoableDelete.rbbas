@@ -2,10 +2,12 @@
 Protected Class UndoableDelete
 Implements UndoableAction
 	#tag Method, Flags = &h0
-		Sub Constructor(field as customEditField, offset as integer, text as string, oldCaretPos as integer, ID as integer)
+		Sub Constructor(field as CustomEditField, offset as integer, length as integer, text as string, attrs() as TextLineAttributes, oldCaretPos as integer, ID as integer)
 		  Reference = new WeakRef(field)
 		  self.offset = offset
+		  self.length = length
 		  self.text = text
+		  self.attrs = attrs
 		  self.oldCaretPos = oldCaretPos
 		  EventID = ID
 		End Sub
@@ -29,7 +31,7 @@ Implements UndoableAction
 	#tag Method, Flags = &h0
 		Sub Redo()
 		  if owner = nil then Return
-		  owner.remove(offset, text.len)
+		  owner.private_remove(offset, text.len)
 		  owner.SelStart = min(owner.TextLength, max(0, owner.CaretPos))
 		End Sub
 	#tag EndMethod
@@ -38,13 +40,22 @@ Implements UndoableAction
 		Sub Undo()
 		  if owner = nil then Return
 		  owner.Insert(offset, text)
+		  owner.private_lines.setAttributesOfLinesInRange(offset, length, attrs)
 		  owner.SelStart = min(owner.TextLength, max(0, oldCaretPos))
 		End Sub
 	#tag EndMethod
 
 
 	#tag Property, Flags = &h1
+		Protected attrs() As TextLineAttributes
+	#tag EndProperty
+
+	#tag Property, Flags = &h1
 		Protected EventDesc As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h1
+		Protected length As integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h1

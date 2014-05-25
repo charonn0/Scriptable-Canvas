@@ -38,8 +38,9 @@ Protected Module EditFieldGlobals
 		  #pragma DisableBackgroundTasks
 		  #pragma DisableBoundsChecking
 		  
+		  dim n as Integer = min(source.len, Target.Len)
 		  dim i as Integer
-		  for i = 1 to min(source.len, Target.Len)
+		  for i = 1 to n
 		    if source.Mid(i,1) <> Target.Mid(i,1) then Exit for
 		  next
 		  Return i - 1
@@ -51,6 +52,12 @@ Protected Module EditFieldGlobals
 		  Return pow(color1.Red * 0.299 - color2.Red * 0.299, 2) + pow(color1.Green * 0.587 - color2.Green * 0.587, 2) + pow(color1.Blue * 0.114 - color2.Blue * 0.114, 2)
 		End Function
 	#tag EndMethod
+
+
+	#tag Note, Name = TextStorageType
+		MemoryBlockStorageWide on Linux doesn't work right,
+		but the MemoryBlockStorage works.
+	#tag EndNote
 
 
 	#tag ComputedProperty, Flags = &h0
@@ -71,7 +78,13 @@ Protected Module EditFieldGlobals
 	#tag EndProperty
 
 
-	#tag Constant, Name = CEF_VERSION, Type = String, Dynamic = False, Default = \"1.6.2", Scope = Protected
+	#tag Constant, Name = CEF_VERSION, Type = String, Dynamic = False, Default = \"1.7.6", Scope = Protected
+	#tag EndConstant
+
+	#tag Constant, Name = DebugIndentation, Type = Boolean, Dynamic = False, Default = \"false", Scope = Protected
+	#tag EndConstant
+
+	#tag Constant, Name = DebugTiming, Type = Boolean, Dynamic = False, Default = \"false", Scope = Protected
 	#tag EndConstant
 
 	#tag Constant, Name = STORAGE_ARRAY, Type = Double, Dynamic = False, Default = \"1", Scope = Protected
@@ -84,6 +97,7 @@ Protected Module EditFieldGlobals
 	#tag EndConstant
 
 	#tag Constant, Name = TextStorageType, Type = Double, Dynamic = False, Default = \"2", Scope = Protected
+		#Tag Instance, Platform = Linux, Language = Default, Definition  = \"1"
 	#tag EndConstant
 
 	#tag Constant, Name = UseOldRenderer, Type = Boolean, Dynamic = False, Default = \"false", Scope = Protected

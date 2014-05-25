@@ -2,7 +2,9 @@
 Protected Class PaTrieNode
 	#tag Method, Flags = &h0
 		Function addKey(key as string, data as variant = nil) As PaTrieNode
-		  if key = "" then 
+		  #pragma DisableBackgroundTasks
+		  
+		  if key = "" then
 		    //overwrite data
 		    self.Data = data
 		    

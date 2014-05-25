@@ -7,7 +7,6 @@ Protected Class SymbolsDefinition
 		  
 		  dim xdoc as XmlDocument
 		  dim node, context as XmlNode
-		  dim tmpObj as Variant
 		  
 		  xdoc = parent.OwnerDocument
 		  context=parent.AppendChild(xdoc.CreateElement("symbol"))
@@ -44,13 +43,11 @@ Protected Class SymbolsDefinition
 	#tag Method, Flags = &h0
 		Sub loadFromXmlNode(node as xmlNode)
 		  //load context out of an xml node
-		  dim tmpObj as Variant
-		  dim tmp as String
 		  
 		  //type
 		  type = node.GetAttribute("type")
 		  
-		  dim i, j as Integer
+		  dim i as Integer
 		  dim subNode as XmlNode
 		  
 		  for i=0 to node.ChildCount-1
@@ -113,7 +110,6 @@ Protected Class SymbolsDefinition
 			Visible=true
 			Group="ID"
 			InitialValue="2147483648"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -121,21 +117,18 @@ Protected Class SymbolsDefinition
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
-			Type="String"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty
@@ -143,7 +136,6 @@ Protected Class SymbolsDefinition
 			Visible=true
 			Group="Position"
 			InitialValue="0"
-			Type="Integer"
 			InheritedFrom="Object"
 		#tag EndViewProperty
 		#tag ViewProperty

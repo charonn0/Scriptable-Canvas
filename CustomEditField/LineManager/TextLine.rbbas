@@ -17,6 +17,25 @@ Inherits TextSegment
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Sub AdoptLine(from as TextLine)
+		  // If a line gets updated, a new TextLine object is often created.
+		  // Then this method is called so that user-settable properties can
+		  // be carried over.
+		  
+		  mLineAttributes = from.mLineAttributes
+		  
+		  mIndentationStateIn = from.mIndentationStateIn
+		  mIndentationStateOut = from.mIndentationStateOut
+		  mChangedIndentState = from.mChangedIndentState
+		  mIsBlkStart = from.mIsBlkStart
+		  mBlockIndent = from.mBlockIndent
+		  isBlockEnd = from.isBlockEnd
+		  isContinuedFromLine = from.isContinuedFromLine
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub AppendHighlightedWords(storage() as charSelection, lineIndex as integer)
 		  dim word as TextSegment
 		  
@@ -27,6 +46,14 @@ Inherits TextSegment
 		    end if
 		  next
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function ChangedIndentStateAndReset() As Boolean
+		  dim b as Boolean = mChangedIndentState
+		  mChangedIndentState = false
+		  return b
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -52,13 +79,22 @@ Inherits TextSegment
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Constructor(offset as integer, length as integer, delimiterLength as integer, tabWidth as integer)
+		Sub Constructor(offset as integer, length as integer, delimiterLength as integer, tabWidth as integer, indent as Integer, lineContIdx as Integer)
 		  visible = true
 		  folded = False
+		  mLineAttributes = new TextLineAttributes
 		  super.Constructor(offset, length)
 		  self.delimiterLength = delimiterLength
 		  self.TabWidth = tabWidth
+		  self.mIndent = indent
+		  self.isContinuedFromLine = lineContIdx
 		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function getAttributes() As TextLineAttributes
+		  return mLineAttributes
+		End Function
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -69,14 +105,19 @@ Inherits TextSegment
 
 	#tag Method, Flags = &h0
 		Function Highlight(definition as highlightdefinition, storage as gapBuffer, forcedContext as highlightcontext = nil, defaultColor as color = &c0) As highlightcontext
+		  #pragma DisableBackgroundTasks
+		  #pragma DisableAutoWaitCursor
+		  
 		  ReDim Words(-1)
 		  ReDim placeholders(-1)
 		  LineSymbols = nil
-		  
 		  highlighted = False
-		  if me.length = 0 then Return nil
 		  
-		  if definition = nil then 
+		  if me.length = 0 then
+		    Return nil
+		  end
+		  
+		  if definition = nil then
 		    ParseLine(storage, DefaultColor)
 		    Return nil
 		  end if
@@ -84,14 +125,10 @@ Inherits TextSegment
 		  dim myText as String = storage.getText(offset, length)
 		  
 		  //run the highlighter, using this line as input and adding an extra EOL to make sure the definition matches EOLs
-		  context = definition.highlight(myText+chr(13), words, placeholders, forcedContext)
+		  Context = definition.highlight(myText+chr(13), words, placeholders, forcedContext)
 		  
 		  //we added an extra eol, remove it.
 		  words.Remove(UBound(words))
-		  
-		  //see if this line is a blockStart
-		  isBlockStart = definition.isBlockStart(myText) <> 0
-		  isBlockEnd = definition.isBlockEnd(myText)
 		  
 		  LineSymbols = definition.ScanSymbols(myText)
 		  
@@ -138,7 +175,7 @@ Inherits TextSegment
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Paint(storage as gapBuffer, g as graphics, x as double, y as double, defaultColor as color, displayInvisible as boolean, selStart as integer, selLength as integer, showLeadingSpace as boolean = true)
+		Sub Paint(storage as gapBuffer, g as graphics, x as double, y as double, defaultColor as color, displayInvisible as boolean, selStart as integer, selLength as integer, showLeadingSpace as boolean, indentVisually as Boolean)
 		  //draws this line
 		  #if not DebugBuild
 		    #pragma DisableBackgroundTasks
@@ -151,15 +188,22 @@ Inherits TextSegment
 		    ParseLine(storage, defaultColor)
 		  end if
 		  
+		  if indentVisually then
+		    x = self.indent + x
+		  end if
+		  
 		  width = 0
 		  dim text as String
 		  dim word as TextSegment
 		  dim wordFound as Boolean
+		  dim darkerHilightColor as Color = HighlightColor.darkerColor(50)
 		  
 		  //paint tokens
 		  for i as Integer = 0 to words.Ubound
 		    Word = words(i)
-		    g.ForeColor = HighlightColor.darkerColor(50)
+		    g.ForeColor = darkerHilightColor
+		    
+		    dim selfWordOfs as Integer = word.Offset + self.Offset
 		    
 		    if word.TYPE = TYPE_SPACE then
 		      text = " "
@@ -195,7 +239,7 @@ Inherits TextSegment
 		      else
 		        g.ForeColor = defaultColor
 		      end if
-		      text = storage.getText(word.offset + offset, word.length)
+		      text = storage.getText(selfWordOfs, word.length)
 		    end if
 		    
 		    g.Bold = Word.bold or bold
@@ -203,46 +247,91 @@ Inherits TextSegment
 		    g.Italic = word.italic or italic
 		    
 		    //cache width
-		    if word.lastFont <> g.TextFont or word.lastSize <> g.TextSize or showInvisible <> displayInvisible then 
+		    if word.lastFont <> g.TextFont or word.lastSize <> g.TextSize or showInvisible <> displayInvisible then
 		      word.width = -1
 		    end if
-		    if word.width < 0 then 
+		    if word.width < 0 then
 		      word.width = g.StringWidth(text)
 		    end if
 		    
 		    //draw txt
 		    if (word.Type = TYPE_WORD or word.Type = TYPE_PLACEHOLDER or displayInvisible) and x + word.width >= 0 and  x < g.Width and y >= 0 and y <= g.Height + g.TextHeight  then
-		      if Word.TYPE = TYPE_TAB then 
+		      if Word.TYPE = TYPE_TAB then
 		        Text = VISIBLETABCHAR //a small hack to make the visible char the same width as the tab
 		      ElseIf Word.TYPE = TYPE_SPACE then
 		        text = VISIBLESPACECHAR
 		      end if
 		      
-		      if word.TYPE = TYPE_PLACEHOLDER then 
+		      if word.TYPE = TYPE_PLACEHOLDER then
 		        dim oldc as color = g.ForeColor
 		        dim colorOffset as Integer = 0
 		        
 		        //make darker if placeholder is in selection...
-		        if self.offset + word.offset >= selStart and self.offset + word.offset + Word.length <= selStart + selLength then
+		        if selfWordOfs >= selStart and selfWordOfs + Word.length <= selStart + selLength then
 		          colorOffset = 50
+		          oldc = oldc.invertColor
 		        end if
+		        
 		        g.ForeColor = TextPlaceholder(word).placeholderBackgroundColor.darkerColor(colorOffset)
-		        g.fillRoundRect x, y - g.TextAscent, word.width, g.TextHeight + 1, g.TextHeight, g.TextHeight
+		        g.FillRoundRect x, y - g.TextAscent, word.width, g.TextHeight + 1, g.TextHeight, g.TextHeight
 		        
 		        g.ForeColor = TextPlaceholder(word).placeholderBackgroundColor.darkerColor(30).darkerColor(colorOffset)
 		        g.DrawRoundRect x, y - g.TextAscent, word.width, g.TextHeight + 1, g.TextHeight, g.TextHeight
-		        g.ForeColor = oldc
 		        
-		        if self.offset + word.offset >= selStart and self.offset + word.offset + Word.length <= selStart + selLength then
-		          g.ForeColor = g.ForeColor.invertColor
-		        end if
+		        g.ForeColor = oldc
 		      end if
 		      
-		      //utf-16 just won't work correctly..
-		      if text.Encoding <> nil and text.Encoding.Equals(encodings.UTF16) then text = text + " "
+		      #if RBVersion < 2011 // this appears an old hack we don't need in recent RB versions any more, I (TT) believe
+		        // UTF-16 don't work correctly, so we have to append a blank
+		        if text.Encoding <> nil and text.Encoding.Equals(encodings.UTF16) then text = text + " "
+		      #endif
 		      
-		      g.DrawString text, x, y
-		      'g.DrawRect x,y - g.TextAscent,word.width,g.TextHeight
+		      #if TargetMacOS
+		        // draw the word normally
+		        g.DrawString text, x, y
+		        
+		      #else
+		        // On Windows and Linux, selection colors are usually rather dark, which
+		        // in turn requires the text to be shown in white when it's selected.
+		        
+		        if _
+		          selLength > 0 and _
+		          (selStart < selfWordOfs + word.Length) and _ // does selection start before end of this word?
+		          (selStart + selLength > selfWordOfs) then // does selection end after start of this word?
+		          // if part of the text is selected, we need to split it up into the selected and unselected part,
+		          // and draw them in different colors
+		          
+		          dim l1, l2, l3 as Integer, t1, t2, t3 as String, w as Double
+		          dim normalColor as Color = g.ForeColor
+		          
+		          // part before selection
+		          l1 = Max (0, selStart - selfWordOfs)
+		          // part inside selection
+		          l2 = selLength - Max (0, selfWordOfs - selStart)
+		          // part past selection
+		          l3 = word.Length - (l1 + l2)
+		          
+		          t1 = text.Left (l1)
+		          t2 = text.Mid (l1+1, l2)
+		          t3 = text.Mid (l1+l2+1)
+		          
+		          if t1 <> "" then
+		            g.DrawString t1, x, y
+		            w = g.StringWidth(t1)
+		          end if
+		          g.ForeColor = &cFFFFFF // white
+		          g.DrawString t2, x+w, y
+		          if t3 <> "" then
+		            w = g.StringWidth(t1+t2)
+		            g.ForeColor = normalColor
+		            g.DrawString t3, x+w, y
+		          end if
+		        else
+		          // draw the word normally
+		          g.DrawString text, x, y
+		        end if
+		      #endif
+		      
 		    end if
 		    
 		    x = x + word.Width
@@ -267,7 +356,7 @@ Inherits TextSegment
 		  dim text as String = buffer.getText(offset, length)
 		  if text.Encoding <> nil and text.Encoding.Equals(Encodings.UTF16) then text = text.ConvertEncoding(Encodings.UTF8)
 		  
-		  dim scanner as new regex
+		  dim scanner as new RegEx
 		  scanner.SearchPattern = "[ ]|\t|\x0A|(?:\x0D\x0A?)"
 		  
 		  dim match as RegExMatch
@@ -329,7 +418,7 @@ Inherits TextSegment
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Function PrinterPaint(storage as gapBuffer, g as graphics, x as double, y as double, w as integer, defaultColor as color, displayInvisible as boolean, wrap as boolean) As integer
+		Function PrinterPaint(storage as gapBuffer, g as graphics, x as double, y as double, w as integer, defaultColor as color, displayInvisible as boolean, wrap as boolean, indentVisually as Boolean) As integer
 		  //draws this line
 		  #if not DebugBuild
 		    #pragma DisableBackgroundTasks
@@ -399,10 +488,10 @@ Inherits TextSegment
 		    g.Italic = word.italic or italic
 		    
 		    //cache width
-		    if word.lastFont <> g.TextFont or word.lastSize <> g.TextSize or showInvisible <> displayInvisible then 
+		    if word.lastFont <> g.TextFont or word.lastSize <> g.TextSize or showInvisible <> displayInvisible then
 		      word.width = -1
 		    end if
-		    if word.width < 0 then 
+		    if word.width < 0 then
 		      word.width = g.StringWidth(text)
 		    end if
 		    
@@ -438,7 +527,7 @@ Inherits TextSegment
 		    
 		    //draw txt
 		    if (word.Type = TYPE_WORD or word.Type = TYPE_PLACEHOLDER or displayInvisible) and x + word.width >= 0 and  x < g.Width and y >= 0 and y <= g.Height + g.TextHeight  then
-		      if Word.TYPE = TYPE_TAB then 
+		      if Word.TYPE = TYPE_TAB then
 		        Text = VISIBLETABCHAR //a small hack to make the visible char the same width as the tab
 		      ElseIf Word.TYPE = TYPE_SPACE then
 		        text = VISIBLESPACECHAR
@@ -457,8 +546,11 @@ Inherits TextSegment
 		      //utf-16 just won't work correctly..
 		      if text.Encoding <> nil and text.Encoding.Equals(encodings.UTF16) then text = text + " "
 		      
-		      g.DrawString text, x, y
-		      'g.DrawRect x,y - g.TextAscent,word.width,g.TextHeight
+		      dim x2 as Integer = x
+		      if indentVisually then
+		        x2 = self.indent + x2
+		      end if
+		      g.DrawString text, x2, y
 		    end if
 		    
 		    x = x + word.Width
@@ -470,6 +562,12 @@ Inherits TextSegment
 		  showInvisible = displayInvisible
 		  Return lines
 		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Sub setAttributes(attr as TextLineAttributes)
+		  mLineAttributes = attr
+		End Sub
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
@@ -496,7 +594,7 @@ Inherits TextSegment
 		  
 		  //gets the text to be displayed by this line.
 		  if length = 0 then Return 0
-		  if length < 0 then 
+		  if length < 0 then
 		    length = self.length
 		    
 		    if self.lastFont <> g.TextFont or self.lastSize <> g.TextSize then width = 0
@@ -507,7 +605,7 @@ Inherits TextSegment
 		  self.lastSize = g.TextSize
 		  
 		  //unparsed? return the raw text
-		  if UBound(words) < 0 then 
+		  if UBound(words) < 0 then
 		    ParseLine(buffer, &c00)
 		    if UBound(words) < 0 then Return g.StringWidth(buffer.getText(self.offset, self.length))
 		  end if
@@ -579,6 +677,62 @@ Inherits TextSegment
 		End Function
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Sub UpdateIndentationState(definition as highlightdefinition, prevIndentationState as String, myText as String)
+		  // TODO: Maybe optimize this so that it doesn't need to perform the Regex checks
+		  // every time. E.g, if neither the mIndentationState nor the text changed, then
+		  // there's no need to update.
+		  // However, how to I tell if the text has changed? I shouldn't buffer each line here, that might
+		  // be wasteful.
+		  
+		  if mIndentationStateIn <> prevIndentationState then
+		    mIndentationStateIn = prevIndentationState
+		    mIndentationStateOut = prevIndentationState
+		    mChangedIndentState = true
+		  end
+		  
+		  if me.length = 0 then
+		    mIsBlkStart = false
+		    mBlockIndent = 0
+		    isBlockEnd = false
+		    Return
+		  end
+		  
+		  dim newState as String
+		  mBlockIndent = definition.isBlockStart(myText, mIndentationStateIn, newState)
+		  if newState <> mIndentationStateOut then
+		    mIndentationStateOut = newState
+		    mChangedIndentState = true
+		  end
+		  
+		  isBlockEnd = definition.isBlockEnd(myText, newState, newState)
+		  if newState <> mIndentationStateOut then
+		    mIndentationStateOut = newState
+		    mChangedIndentState = true
+		  end
+		  
+		  mIsBlkStart = mBlockIndent <> 0
+		  
+		End Sub
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
+		Function VisualIndent(isIndentedVisually as Boolean) As Integer
+		  if isIndentedVisually then
+		    return self.indent
+		  end if
+		End Function
+	#tag EndMethod
+
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mBlockIndent
+			End Get
+		#tag EndGetter
+		blockIndentation As Integer
+	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0
 		Context As highlightContext
@@ -596,16 +750,72 @@ Inherits TextSegment
 		Protected highlighted As boolean
 	#tag EndProperty
 
-	#tag Property, Flags = &h0
-		icon As picture
-	#tag EndProperty
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mLineAttributes.Icon
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mLineAttributes.Icon = value
+			End Set
+		#tag EndSetter
+		icon As Picture
+	#tag EndComputedProperty
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mIndent
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mIndent = value
+			End Set
+		#tag EndSetter
+		indent As Integer
+	#tag EndComputedProperty
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mIndentationStateIn
+			End Get
+		#tag EndGetter
+		IndentationStateIn As String
+	#tag EndComputedProperty
+
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mIndentationStateOut
+			End Get
+		#tag EndGetter
+		IndentationStateOut As String
+	#tag EndComputedProperty
 
 	#tag Property, Flags = &h0
 		isBlockEnd As boolean
 	#tag EndProperty
 
-	#tag Property, Flags = &h0
+	#tag ComputedProperty, Flags = &h0
+		#tag Getter
+			Get
+			  return mIsBlkStart and mBlockIndent <> 0
+			End Get
+		#tag EndGetter
+		#tag Setter
+			Set
+			  mIsBlkStart = value
+			End Set
+		#tag EndSetter
 		isBlockStart As boolean
+	#tag EndComputedProperty
+
+	#tag Property, Flags = &h0
+		isContinuedFromLine As Integer = -1
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -614,6 +824,45 @@ Inherits TextSegment
 
 	#tag Property, Flags = &h0
 		LineSymbols As dictionary
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		lock As CriticalSection
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mBlockIndent As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mChangedIndentState As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mIndent As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mIndentationStateIn As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mIndentationStateOut As String
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		Private mIsBlkStart As Boolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h21
+		#tag Note
+			Holds values that belong to a line as the user sees it, and
+			are controlled by the code using this Editfield rather than needed
+			for the Editfield's management.
+			
+			An example of this is the icon that can be assigned to a line.
+		#tag EndNote
+		Private mLineAttributes As TextLineAttributes
 	#tag EndProperty
 
 	#tag Property, Flags = &h21
@@ -663,11 +912,30 @@ Inherits TextSegment
 
 	#tag ViewBehavior
 		#tag ViewProperty
+			Name="BackgroundColor"
+			Group="Behavior"
+			InitialValue="&h000000"
+			Type="color"
+			InheritedFrom="TextSegment"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="blockIndentation"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="bold"
 			Group="Behavior"
 			InitialValue="0"
 			Type="boolean"
 			InheritedFrom="TextSegment"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="DebugDescription"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+			InheritedFrom="DataRange"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="delimiterLength"
@@ -689,10 +957,16 @@ Inherits TextSegment
 			Type="boolean"
 		#tag EndViewProperty
 		#tag ViewProperty
+			Name="HasBackgroundColor"
+			Group="Behavior"
+			Type="boolean"
+			InheritedFrom="TextSegment"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="icon"
 			Group="Behavior"
 			InitialValue="0"
-			Type="picture"
+			Type="Picture"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ID"
@@ -700,6 +974,23 @@ Inherits TextSegment
 			Type="string"
 			EditorType="MultiLineEditor"
 			InheritedFrom="TextSegment"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="indent"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="IndentationStateIn"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="IndentationStateOut"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Index"
@@ -719,6 +1010,12 @@ Inherits TextSegment
 			Group="Behavior"
 			InitialValue="0"
 			Type="boolean"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="isContinuedFromLine"
+			Group="Behavior"
+			InitialValue="-1"
+			Type="Integer"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="isDirty"
@@ -771,6 +1068,13 @@ Inherits TextSegment
 			Visible=true
 			Group="ID"
 			InheritedFrom="Object"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="TextColor"
+			Group="Behavior"
+			InitialValue="&h000000"
+			Type="color"
+			InheritedFrom="TextSegment"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"

@@ -18,7 +18,7 @@ Protected Class PaTrie
 		  dim searchPath as String
 		  
 		  tmpNode = root.findNode(keyPath, searchPath)
-		  if tmpNode = nil then 
+		  if tmpNode = nil then
 		    //if not found, add the node
 		    tmpNode = root.addKey(keyPath)
 		  end if

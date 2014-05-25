@@ -49,6 +49,13 @@ Inherits TextSegment
 
 	#tag ViewBehavior
 		#tag ViewProperty
+			Name="BackgroundColor"
+			Group="Behavior"
+			InitialValue="&h000000"
+			Type="color"
+			InheritedFrom="TextSegment"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="bold"
 			Group="Behavior"
 			InitialValue="0"
@@ -56,11 +63,24 @@ Inherits TextSegment
 			InheritedFrom="TextSegment"
 		#tag EndViewProperty
 		#tag ViewProperty
+			Name="DebugDescription"
+			Group="Behavior"
+			Type="String"
+			EditorType="MultiLineEditor"
+			InheritedFrom="DataRange"
+		#tag EndViewProperty
+		#tag ViewProperty
 			Name="EndOffset"
 			Group="Behavior"
 			InitialValue="0"
 			Type="Integer"
 			InheritedFrom="DataRange"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="HasBackgroundColor"
+			Group="Behavior"
+			Type="boolean"
+			InheritedFrom="TextSegment"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="ID"
@@ -121,6 +141,13 @@ Inherits TextSegment
 			Visible=true
 			Group="ID"
 			InheritedFrom="Object"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="TextColor"
+			Group="Behavior"
+			InitialValue="&h000000"
+			Type="color"
+			InheritedFrom="TextSegment"
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"

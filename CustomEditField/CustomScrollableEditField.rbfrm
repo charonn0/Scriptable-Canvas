@@ -1,9 +1,9 @@
 #tag Window
 Begin ContainerControl CustomScrollableEditField
-   AcceptFocus     =   False
+   AcceptFocus     =   True
    AcceptTabs      =   False
    AutoDeactivate  =   True
-   BackColor       =   "&cFFFFFF00"
+   BackColor       =   16777215
    Backdrop        =   0
    Enabled         =   True
    EraseBackground =   True
@@ -18,7 +18,7 @@ Begin ContainerControl CustomScrollableEditField
    LockTop         =   False
    TabIndex        =   0
    TabPanelIndex   =   0
-   TabStop         =   false
+   TabStop         =   False
    Top             =   32
    UseFocusRing    =   True
    Visible         =   True
@@ -30,8 +30,12 @@ Begin ContainerControl CustomScrollableEditField
       AutocompleteAppliesStandardCase=   true
       AutoDeactivate  =   True
       AutoIndentNewLines=   true
+      Backdrop        =   0
       Border          =   true
+      CaretLine       =   0
+      CaretPos        =   0
       ClearHighlightedRangesOnTextChange=   true
+      disableReset    =   False
       DisplayDirtyLines=   True
       DisplayInvisibleCharacters=   False
       DisplayLineNumbers=   True
@@ -40,15 +44,20 @@ Begin ContainerControl CustomScrollableEditField
       EnableAutocomplete=   True
       Enabled         =   True
       EnableLineFoldings=   False
+      enableLineFoldingSetting=   False
       EraseBackground =   False
+      GutterWidth     =   0
       Height          =   102
       HelpTag         =   ""
       HighlightBlocksOnMouseOverGutter=   true
       HighlightMatchingBrackets=   true
       HighlightMatchingBracketsMode=   0
       ignoreRepaint   =   False
+      IndentPixels    =   16
+      IndentVisually  =   False
       Index           =   -2147483648
       InitialParent   =   ""
+      KeepEntireTextIndented=   False
       Left            =   0
       leftMarginOffset=   4
       LineNumbersTextFont=   "System"
@@ -58,18 +67,29 @@ Begin ContainerControl CustomScrollableEditField
       LockLeft        =   True
       LockRight       =   True
       LockTop         =   True
+      MaxVisibleLines =   0
       ReadOnly        =   False
       RightMarginAtPixel=   0
       RightScrollMargin=   150
-      Scope           =   2
-      TabIndex        =   0
+      Scope           =   0
+      ScrollPosition  =   0
+      ScrollPositionX =   0
+      selLength       =   0
+      selStart        =   0
+      SelText         =   ""
+      Stats           =   ""
+      TabIndex        =   4
       TabPanelIndex   =   0
       TabStop         =   True
+      TabWidth        =   0
       Text            =   ""
       TextFont        =   "System"
+      TextHeight      =   0
+      TextLength      =   0
       TextSize        =   0
       ThickInsertionPoint=   true
       Top             =   0
+      Transparent     =   True
       UseFocusRing    =   False
       Visible         =   True
       Width           =   192
@@ -94,7 +114,7 @@ Begin ContainerControl CustomScrollableEditField
       Minimum         =   0
       PageStep        =   20
       Scope           =   2
-      TabIndex        =   1
+      TabIndex        =   5
       TabPanelIndex   =   0
       TabStop         =   True
       Top             =   0
@@ -122,13 +142,30 @@ Begin ContainerControl CustomScrollableEditField
       Minimum         =   0
       PageStep        =   20
       Scope           =   2
-      TabIndex        =   2
+      TabIndex        =   6
       TabPanelIndex   =   0
       TabStop         =   True
       Top             =   102
       Value           =   0
       Visible         =   True
       Width           =   192
+   End
+   Begin Timer SelChangeDeferrer
+      Enabled         =   True
+      Height          =   32
+      Index           =   -2147483648
+      InitialParent   =   ""
+      Left            =   -44
+      LockedInPosition=   False
+      Mode            =   0
+      Period          =   0
+      Scope           =   0
+      TabIndex        =   3
+      TabPanelIndex   =   0
+      TabStop         =   True
+      Top             =   0
+      Visible         =   True
+      Width           =   32
    End
 End
 #tag EndWindow
@@ -148,6 +185,9 @@ End
 
 	#tag Event
 		Function ConstructContextualMenu(base as MenuItem, x as Integer, y as Integer) As Boolean
+		  #pragma unused base
+		  #pragma unused x
+		  #pragma unused y
 		  '
 		End Function
 	#tag EndEvent
@@ -160,6 +200,7 @@ End
 
 	#tag Event
 		Function ContextualMenuAction(hitItem as MenuItem) As Boolean
+		  #pragma unused hititem
 		  '
 		End Function
 	#tag EndEvent
@@ -172,24 +213,35 @@ End
 
 	#tag Event
 		Function DragEnter(obj As DragItem, action As Integer) As Boolean
+		  #pragma unused obj
+		  #pragma unused action
 		  '
 		End Function
 	#tag EndEvent
 
 	#tag Event
 		Sub DragExit(obj As DragItem, action As Integer)
+		  #pragma unused obj
+		  #pragma unused action
+		  
 		  '
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Function DragOver(x As Integer, y As Integer, obj As DragItem, action As Integer) As Boolean
+		  #pragma unused x
+		  #pragma unused y
+		  #pragma unused obj
+		  #pragma unused action
 		  '
 		End Function
 	#tag EndEvent
 
 	#tag Event
 		Sub DropObject(obj As DragItem, action As Integer)
+		  #pragma unused obj
+		  #pragma unused action
 		  '
 		End Sub
 	#tag EndEvent
@@ -202,48 +254,42 @@ End
 
 	#tag Event
 		Sub GotFocus()
-		  '
+		  break
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Function KeyDown(Key As String) As Boolean
+		  #pragma unused key
 		  '
 		End Function
 	#tag EndEvent
 
 	#tag Event
 		Sub KeyUp(Key As String)
+		  #pragma unused key
 		  '
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Sub LostFocus()
-		  '
-		End Sub
-	#tag EndEvent
-
-	#tag Event
-		Sub Maximize()
-		  '
-		End Sub
-	#tag EndEvent
-
-	#tag Event
-		Sub Minimize()
-		  '
+		  break
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Function MouseDown(X As Integer, Y As Integer) As Boolean
+		  #pragma unused x
+		  #pragma unused y
 		  '
 		End Function
 	#tag EndEvent
 
 	#tag Event
 		Sub MouseDrag(X As Integer, Y As Integer)
+		  #pragma unused x
+		  #pragma unused y
 		  '
 		End Sub
 	#tag EndEvent
@@ -262,18 +308,26 @@ End
 
 	#tag Event
 		Sub MouseMove(X As Integer, Y As Integer)
+		  #pragma unused x
+		  #pragma unused y
 		  '
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Sub MouseUp(X As Integer, Y As Integer)
+		  #pragma unused x
+		  #pragma unused y
 		  '
 		End Sub
 	#tag EndEvent
 
 	#tag Event
 		Function MouseWheel(X As Integer, Y As Integer, DeltaX as Integer, DeltaY as Integer) As Boolean
+		  #pragma unused x
+		  #pragma unused y
+		  #pragma unused DeltaX
+		  #pragma unused DeltaY
 		  '
 		End Function
 	#tag EndEvent
@@ -292,6 +346,7 @@ End
 
 	#tag Event
 		Sub Paint(g As Graphics)
+		  #pragma unused g
 		  self.updateFocusRing
 		End Sub
 	#tag EndEvent
@@ -304,12 +359,6 @@ End
 
 	#tag Event
 		Sub Resizing()
-		  '
-		End Sub
-	#tag EndEvent
-
-	#tag Event
-		Sub Restore()
 		  '
 		End Sub
 	#tag EndEvent
@@ -416,18 +465,32 @@ End
 		    dim context, grafPort as Int32
 		    dim res as Integer
 		    
+		    dim meTop, meLeft as Integer
+		    meTop = me.Top
+		    meLeft = me.Left
+		    dim container as RectControl = me.Parent
+		    while container <> nil
+		      meTop = meTop + container.Top
+		      meLeft = meLeft + container.Left
+		      container = container.Parent
+		    wend
+		    
 		    // We have to open a new drawing context because otherwise we might get our drawings clipped
 		    // or we might draw into the wrong window
-		    grafPort = Window.Graphics.Handle(Graphics.HandleTypeCGrafPtr)
+		    dim w as Window = me.Window
+		    while w isA ContainerControl
+		      w = ContainerControl(w).Window
+		    wend
+		    grafPort = w.Graphics.Handle(Graphics.HandleTypeCGrafPtr)
 		    res = QDBeginCGContext (grafPort, context)
 		    if res = 0 then
 		      // Now draw the ring
 		      declare function DrawThemeFocusRect lib "Carbon" (inRect as Ptr, DrawRing as Boolean) as Integer
 		      dim mb as new MemoryBlock(8)
-		      mb.Short(0) = me.Top
-		      mb.Short(2) = me.Left
-		      mb.Short(4) = me.Top+me.Height
-		      mb.Short(6) = me.Left+me.Width
+		      mb.Short(0) = meTop
+		      mb.Short(2) = meLeft
+		      mb.Short(4) = meTop+me.Height
+		      mb.Short(6) = meLeft+me.Width
 		      call DrawThemeFocusRect (mb, ringVisible)
 		      // Close the drawing context again
 		      if grafPort <> 0 then
@@ -435,7 +498,13 @@ End
 		        call QDEndCGContext (grafPort, context)
 		      end if
 		    end
+		    if res <> 0 then break
 		    return res = 0
+		    
+		  #else
+		    
+		    // Draw something with RB's own functions
+		    // ...
 		    
 		  #endif
 		  
@@ -468,7 +537,7 @@ End
 
 	#tag Method, Flags = &h0
 		Function HasFocus() As Boolean
-		  return mHasFocus or CustomEditField.CurrentFocusedField = contentField
+		  return mHasFocus and CustomEditField.CurrentFocusedField = contentField
 		End Function
 	#tag EndMethod
 
@@ -563,18 +632,6 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
-		Sub Remove(offset as integer, length as integer, updateCaret as boolean = true)
-		  contentField.Remove(offset, length, updateCaret)
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
-		Sub Replace(offset as integer, length as integer, text as string, eventID as integer = - 1)
-		  contentField.Replace(offset, length, text, eventID)
-		End Sub
-	#tag EndMethod
-
-	#tag Method, Flags = &h0
 		Sub ResetUndo()
 		  contentField.ResetUndo
 		End Sub
@@ -619,16 +676,16 @@ End
 		  contentField.DirtyLinesColor = &cFF9999
 		  contentField.DisplayDirtyLines = true
 		  contentField.DisplayLineNumbers = true
-		  contentField.DisplayRightMarginMarker = true
+		  contentField.DisplayRightMarginMarker = false
 		  contentField.GutterBackgroundColor = &cEEEEEE
 		  contentField.GutterSeparationLineColor = &C888888
 		  contentField.LeftMarginOffset = 4
 		  contentField.LineNumbersColor = &c888888
 		  contentField.RightMarginAtPixel = 0
 		  contentField.TextColor = &c000000
-		  contentField.TextFont = "SmallSystem"
-		  contentField.TextSelectionColor = &c000000
+		  contentField.TextFont = ""
 		  contentField.TextSize = 0
+		  contentField.TextSelectionColor = &c000000
 		  contentField.ThickInsertionPoint = true
 		  contentField.AutoCloseBrackets = False
 		  contentField.AutocompleteAppliesStandardCase = true
@@ -676,6 +733,21 @@ End
 	#tag EndMethod
 
 	#tag Method, Flags = &h0
+		Function TopInWindow() As Integer
+		  // Helper function in place of "Top". Useful when this is embedded inside a ContainerControl
+		  
+		  dim n as Integer = self.Top
+		  dim w as Window
+		  w = me.Window
+		  while w isA ContainerControl
+		    n = n + w.Top
+		    w = ContainerControl(w).Window
+		  wend
+		  return n
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h0
 		Sub Undo()
 		  contentField.Undo
 		End Sub
@@ -693,7 +765,7 @@ End
 		    mHadFocus = me.drawFocusRing
 		  elseif mHadFocus then
 		    // We need to make sure the focus ring gets erased.
-		    Window.RefreshRect me.Left-6, me.Top-6, me.Width+12, me.Height+12
+		    Window.RefreshRect me.Left-8, me.Top-8, me.Width+16, me.Height+16
 		    mHadFocus = false
 		  end
 		End Sub
@@ -826,7 +898,7 @@ End
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
-		Event PaintOver(g as Graphics)
+		Event PaintOver(g as Graphics, gutterWidth as Integer)
 	#tag EndHook
 
 	#tag Hook, Flags = &h0
@@ -936,20 +1008,6 @@ End
 			End Set
 		#tag EndSetter
 		AutoIndentNewLines As boolean
-	#tag EndComputedProperty
-
-	#tag ComputedProperty, Flags = &h0
-		#tag Getter
-			Get
-			  return contentField.BackColor
-			End Get
-		#tag EndGetter
-		#tag Setter
-			Set
-			  contentField.BackColor = value
-			End Set
-		#tag EndSetter
-		BackColor As color
 	#tag EndComputedProperty
 
 	#tag ComputedProperty, Flags = &h0
@@ -1258,6 +1316,10 @@ End
 		Private mHasFocus As Boolean
 	#tag EndProperty
 
+	#tag Property, Flags = &h21
+		Private mSettingSelection As Boolean
+	#tag EndProperty
+
 	#tag ComputedProperty, Flags = &h0
 		#tag Getter
 			Get
@@ -1322,7 +1384,9 @@ End
 		#tag EndGetter
 		#tag Setter
 			Set
+			  mSettingSelection = true // necessary to avoid
 			  contentField.SelLength = value
+			  mSettingSelection = false
 			End Set
 		#tag EndSetter
 		SelLength As Integer
@@ -1336,7 +1400,9 @@ End
 		#tag EndGetter
 		#tag Setter
 			Set
+			  mSettingSelection = true
 			  contentField.SelStart = value
+			  mSettingSelection = false
 			End Set
 		#tag EndSetter
 		SelStart As Integer
@@ -1511,7 +1577,20 @@ End
 	#tag EndEvent
 	#tag Event
 		Sub SelChanged(line as integer, column as integer, length as integer)
-		  SelChanged()
+		  #pragma unused line
+		  #pragma unused column
+		  #pragma unused length
+		  
+		  if mSettingSelection then
+		    // not sure if this needs to be called at all when we're setting the selection explicitly, but at least
+		    // we must not defer it then because it'll cause trouble in SourceCodeView.handleSourceChange
+		    // because that method couldn't prevent repeated (usually recursive) calls to itself then.
+		    RaiseEvent SelChanged()
+		  else
+		    // We postpone the SelChange event so that, if there's also a TextChange,
+		    // we pass on the SelChange after the TextChange
+		    SelChangeDeferrer.Mode = Timer.ModeSingle
+		  end if
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -1631,8 +1710,8 @@ End
 		End Sub
 	#tag EndEvent
 	#tag Event
-		Sub PaintOver(g as Graphics)
-		  PaintOver(g)
+		Sub PaintOver(g as Graphics, gutterWidth as Integer)
+		  PaintOver(g, gutterWidth)
 		End Sub
 	#tag EndEvent
 	#tag Event
@@ -1662,6 +1741,10 @@ End
 	#tag EndEvent
 	#tag Event
 		Sub PlaceholderSelected(placeholderLabel as String, lineIndex as integer, line as textLine, placeholder as textPlaceholder, doubleClick as Boolean)
+		  #pragma unused line
+		  #pragma unused placeholder
+		  #pragma unused doubleClick
+		  
 		  PlaceholderSelected(lineIndex, placeholderLabel)
 		End Sub
 	#tag EndEvent
@@ -1702,6 +1785,13 @@ End
 	#tag Event
 		Sub ValueChanged()
 		  contentField.ScrollPositionX = me.Value
+		End Sub
+	#tag EndEvent
+#tag EndEvents
+#tag Events SelChangeDeferrer
+	#tag Event
+		Sub Action()
+		  RaiseEvent SelChanged
 		End Sub
 	#tag EndEvent
 #tag EndEvents
